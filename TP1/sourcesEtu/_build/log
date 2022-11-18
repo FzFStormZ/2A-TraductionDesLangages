@@ -1,0 +1,132 @@
+# dune runtest
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Workspace root:
+# /home/kali/Documents/2A-SN/TraductionDesLangages/TP1/sourcesEtu
+# Auto-detected concurrency: 4
+$ /home/kali/.opam/4.12.0/bin/ocamlc.opt -config > /tmp/dune_92120a_output
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; for_host = None
+#  ; fdo_target_exe = None
+#  ; build_dir = "default"
+#  ; toplevel_path = Some External "/home/kali/.opam/4.12.0/lib/toplevel"
+#  ; ocaml_bin = External "/home/kali/.opam/4.12.0/bin"
+#  ; ocaml = Ok External "/home/kali/.opam/4.12.0/bin/ocaml"
+#  ; ocamlc = External "/home/kali/.opam/4.12.0/bin/ocamlc.opt"
+#  ; ocamlopt = Ok External "/home/kali/.opam/4.12.0/bin/ocamlopt.opt"
+#  ; ocamldep = Ok External "/home/kali/.opam/4.12.0/bin/ocamldep.opt"
+#  ; ocamlmklib = Ok External "/home/kali/.opam/4.12.0/bin/ocamlmklib.opt"
+#  ; env =
+#      map
+#        { "DUNE_OCAML_HARDCODED" : "/home/kali/.opam/4.12.0/lib"
+#        ; "DUNE_OCAML_STDLIB" : "/home/kali/.opam/4.12.0/lib/ocaml"
+#        ; "DUNE_SOURCEROOT" :
+#            "/home/kali/Documents/2A-SN/TraductionDesLangages/TP1/sourcesEtu"
+#        ; "INSIDE_DUNE" :
+#            "/home/kali/Documents/2A-SN/TraductionDesLangages/TP1/sourcesEtu/_build/default"
+#        ; "OCAMLFIND_IGNORE_DUPS_IN" :
+#            "/home/kali/Documents/2A-SN/TraductionDesLangages/TP1/sourcesEtu/_build/install/default/lib"
+#        ; "OCAMLPATH" :
+#            "/home/kali/Documents/2A-SN/TraductionDesLangages/TP1/sourcesEtu/_build/install/default/lib"
+#        ; "OCAMLTOP_INCLUDE_PATH" :
+#            "/home/kali/Documents/2A-SN/TraductionDesLangages/TP1/sourcesEtu/_build/install/default/lib/toplevel"
+#        ; "OCAML_COLOR" : "always"
+#        ; "OPAMCOLOR" : "always"
+#        }
+#  ; findlib_paths = [ External "/home/kali/.opam/4.12.0/lib" ]
+#  ; arch_sixtyfour = true
+#  ; natdynlink_supported = true
+#  ; supports_shared_libraries = true
+#  ; ocaml_config =
+#      { version = "4.12.0"
+#      ; standard_library_default = "/home/kali/.opam/4.12.0/lib/ocaml"
+#      ; standard_library = "/home/kali/.opam/4.12.0/lib/ocaml"
+#      ; standard_runtime = "the_standard_runtime_variable_was_deleted"
+#      ; ccomp_type = "cc"
+#      ; c_compiler = "gcc"
+#      ; ocamlc_cflags = [ "-O2"; "-fno-strict-aliasing"; "-fwrapv"; "-fPIC" ]
+#      ; ocamlc_cppflags = [ "-D_FILE_OFFSET_BITS=64"; "-D_REENTRANT" ]
+#      ; ocamlopt_cflags =
+#          [ "-O2"; "-fno-strict-aliasing"; "-fwrapv"; "-fPIC" ]
+#      ; ocamlopt_cppflags = [ "-D_FILE_OFFSET_BITS=64"; "-D_REENTRANT" ]
+#      ; bytecomp_c_compiler =
+#          [ "gcc"
+#          ; "-O2"
+#          ; "-fno-strict-aliasing"
+#          ; "-fwrapv"
+#          ; "-fPIC"
+#          ; "-D_FILE_OFFSET_BITS=64"
+#          ; "-D_REENTRANT"
+#          ]
+#      ; bytecomp_c_libraries = [ "-lm"; "-lpthread" ]
+#      ; native_c_compiler =
+#          [ "gcc"
+#          ; "-O2"
+#          ; "-fno-strict-aliasing"
+#          ; "-fwrapv"
+#          ; "-fPIC"
+#          ; "-D_FILE_OFFSET_BITS=64"
+#          ; "-D_REENTRANT"
+#          ]
+#      ; native_c_libraries = [ "-lm" ]
+#      ; native_pack_linker = [ "ld"; "-r"; "-o" ]
+#      ; cc_profile = []
+#      ; architecture = "amd64"
+#      ; model = "default"
+#      ; int_size = 63
+#      ; word_size = 64
+#      ; system = "linux"
+#      ; asm = [ "as" ]
+#      ; asm_cfi_supported = true
+#      ; with_frame_pointers = false
+#      ; ext_exe = ""
+#      ; ext_obj = ".o"
+#      ; ext_asm = ".s"
+#      ; ext_lib = ".a"
+#      ; ext_dll = ".so"
+#      ; os_type = "Unix"
+#      ; default_executable_name = "a.out"
+#      ; systhread_supported = true
+#      ; host = "x86_64-pc-linux-gnu"
+#      ; target = "x86_64-pc-linux-gnu"
+#      ; profiling = false
+#      ; flambda = false
+#      ; spacetime = false
+#      ; safe_string = true
+#      ; exec_magic_number = "Caml1999X029"
+#      ; cmi_magic_number = "Caml1999I029"
+#      ; cmo_magic_number = "Caml1999O029"
+#      ; cma_magic_number = "Caml1999A029"
+#      ; cmx_magic_number = "Caml1999Y029"
+#      ; cmxa_magic_number = "Caml1999Z029"
+#      ; ast_impl_magic_number = "Caml1999M029"
+#      ; ast_intf_magic_number = "Caml1999N029"
+#      ; cmxs_magic_number = "Caml1999D029"
+#      ; cmt_magic_number = "Caml1999T029"
+#      ; natdynlink_supported = true
+#      ; supports_shared_libraries = true
+#      ; windows_unicode = false
+#      }
+#  }
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamllex -q -o lexer.ml lexer.mll)
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/menhir parser.mly --base parser --infer-write-query parser__mock.ml.mock)
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -49 -nopervasives -nostdlib -g -bin-annot -I .tp1.objs/byte -no-alias-deps -opaque -o .tp1.objs/byte/tp1.cmo -c -impl tp1.ml-gen)
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamlopt.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -w -49 -nopervasives -nostdlib -g -I .tp1.objs/byte -I .tp1.objs/native -intf-suffix .ml-gen -no-alias-deps -opaque -o .tp1.objs/native/tp1.cmx -c -impl tp1.ml-gen)
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamlc.opt -g -w -24 -I .ppx/bfcab61e6a21ecf6d2f80029fc1ef484 -I /home/kali/.opam/4.12.0/lib/base -I /home/kali/.opam/4.12.0/lib/base/base_internalhash_types -I /home/kali/.opam/4.12.0/lib/base/caml -I /home/kali/.opam/4.12.0/lib/base/shadow_stdlib -I /home/kali/.opam/4.12.0/lib/ocaml-compiler-libs/common -I /home/kali/.opam/4.12.0/lib/ocaml-compiler-libs/shadow -I /home/kali/.opam/4.12.0/lib/ocaml/compiler-libs -I /home/kali/.opam/4.12.0/lib/ppx_derivers -I /home/kali/.opam/4.12.0/lib/ppx_inline_test -I /home/kali/.opam/4.12.0/lib/ppx_inline_test/libname -I /home/kali/.opam/4.12.0/lib/ppxlib -I /home/kali/.opam/4.12.0/lib/ppxlib/ast -I /home/kali/.opam/4.12.0/lib/ppxlib/astlib -I /home/kali/.opam/4.12.0/lib/ppxlib/print_diff -I /home/kali/.opam/4.12.0/lib/ppxlib/stdppx -I /home/kali/.opam/4.12.0/lib/ppxlib/traverse_builtins -I /home/kali/.opam/4.12.0/lib/sexplib0 -I /home/kali/.opam/4.12.0/lib/stdlib-shims -no-alias-deps -o .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/dune__exe___ppx.cmo -c -impl .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/_ppx.ml-gen)
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamlopt.opt -g -w -24 -I .ppx/bfcab61e6a21ecf6d2f80029fc1ef484 -I /home/kali/.opam/4.12.0/lib/base -I /home/kali/.opam/4.12.0/lib/base/base_internalhash_types -I /home/kali/.opam/4.12.0/lib/base/caml -I /home/kali/.opam/4.12.0/lib/base/shadow_stdlib -I /home/kali/.opam/4.12.0/lib/ocaml-compiler-libs/common -I /home/kali/.opam/4.12.0/lib/ocaml-compiler-libs/shadow -I /home/kali/.opam/4.12.0/lib/ocaml/compiler-libs -I /home/kali/.opam/4.12.0/lib/ppx_derivers -I /home/kali/.opam/4.12.0/lib/ppx_inline_test -I /home/kali/.opam/4.12.0/lib/ppx_inline_test/libname -I /home/kali/.opam/4.12.0/lib/ppxlib -I /home/kali/.opam/4.12.0/lib/ppxlib/ast -I /home/kali/.opam/4.12.0/lib/ppxlib/astlib -I /home/kali/.opam/4.12.0/lib/ppxlib/print_diff -I /home/kali/.opam/4.12.0/lib/ppxlib/stdppx -I /home/kali/.opam/4.12.0/lib/ppxlib/traverse_builtins -I /home/kali/.opam/4.12.0/lib/sexplib0 -I /home/kali/.opam/4.12.0/lib/stdlib-shims -intf-suffix .ml-gen -no-alias-deps -o .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/dune__exe___ppx.cmx -c -impl .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/_ppx.ml-gen)
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamlopt.opt -g -w -24 -o .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/ppx.exe /home/kali/.opam/4.12.0/lib/base/base_internalhash_types/base_internalhash_types.cmxa -I /home/kali/.opam/4.12.0/lib/base/base_internalhash_types /home/kali/.opam/4.12.0/lib/base/caml/caml.cmxa /home/kali/.opam/4.12.0/lib/sexplib0/sexplib0.cmxa /home/kali/.opam/4.12.0/lib/base/shadow_stdlib/shadow_stdlib.cmxa /home/kali/.opam/4.12.0/lib/base/base.cmxa -I /home/kali/.opam/4.12.0/lib/base /home/kali/.opam/4.12.0/lib/ocaml/compiler-libs/ocamlcommon.cmxa /home/kali/.opam/4.12.0/lib/ocaml-compiler-libs/common/ocaml_common.cmxa /home/kali/.opam/4.12.0/lib/ppxlib/astlib/astlib.cmxa /home/kali/.opam/4.12.0/lib/stdlib-shims/stdlib_shims.cmxa /home/kali/.opam/4.12.0/lib/ppxlib/ast/ppxlib_ast.cmxa /home/kali/.opam/4.12.0/lib/ocaml-compiler-libs/shadow/ocaml_shadow.cmxa /home/kali/.opam/4.12.0/lib/ppxlib/print_diff/ppxlib_print_diff.cmxa /home/kali/.opam/4.12.0/lib/ppx_derivers/ppx_derivers.cmxa /home/kali/.opam/4.12.0/lib/ppxlib/traverse_builtins/ppxlib_traverse_builtins.cmxa /home/kali/.opam/4.12.0/lib/ppxlib/stdppx/stdppx.cmxa /home/kali/.opam/4.12.0/lib/ppxlib/ppxlib.cmxa /home/kali/.opam/4.12.0/lib/ppx_inline_test/libname/ppx_inline_test_libname.cmxa /home/kali/.opam/4.12.0/lib/ppx_inline_test/ppx_inline_test.cmxa .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/dune__exe___ppx.cmx)
+$ (cd _build/default && .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/ppx.exe --cookie 'inline_tests="enabled"' --cookie 'library-name="tp1"' -o lexer.pp.ml --impl lexer.ml -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
+$ (cd _build/default && .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/ppx.exe --cookie 'inline_tests="enabled"' --cookie 'library-name="tp1"' -o parser__mock.ml.pp.mock --impl parser__mock.ml.mock -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
+$ (cd _build/default && .ppx/bfcab61e6a21ecf6d2f80029fc1ef484/ppx.exe --cookie 'inline_tests="enabled"' --cookie 'library-name="tp1"' -o main.pp.ml --impl main.ml -corrected-suffix .ppx-corrected -diff-cmd - -dump-ast)
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamldep.opt -modules -impl lexer.pp.ml) > _build/default/.tp1.objs/lexer.pp.ml.d
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamldep.opt -modules -impl parser__mock.ml.pp.mock) > _build/default/.tp1.objs/parser__mock.ml.pp.mock.d
+$ (cd _build/default && /home/kali/.opam/4.12.0/bin/ocamldep.opt -modules -impl main.pp.ml) > _build/default/.tp1.objs/main.pp.ml.d
+$ (cd _build/.sandbox/f6870892f00dcee9003b6bbffd75a9f0/default && /home/kali/.opam/4.12.0/bin/ocamlc.opt -w @1..3@5..28@30..39@43@46..47@49..57@61..62-40 -strict-sequence -strict-formats -short-paths -keep-locs -warn-error -A -g -I .tp1.objs/byte -I /home/kali/.opam/4.12.0/lib/base -I /home/kali/.opam/4.12.0/lib/base/base_internalhash_types -I /home/kali/.opam/4.12.0/lib/base/caml -I /home/kali/.opam/4.12.0/lib/base/shadow_stdlib -I /home/kali/.opam/4.12.0/lib/jane-street-headers -I /home/kali/.opam/4.12.0/lib/ppx_compare/runtime-lib -I /home/kali/.opam/4.12.0/lib/ppx_enumerate/runtime-lib -I /home/kali/.opam/4.12.0/lib/ppx_hash/runtime-lib -I /home/kali/.opam/4.12.0/lib/ppx_inline_test/config -I /home/kali/.opam/4.12.0/lib/ppx_inline_test/runtime-lib -I /home/kali/.opam/4.12.0/lib/ppx_sexp_conv/runtime-lib -I /home/kali/.opam/4.12.0/lib/sexplib0 -I /home/kali/.opam/4.12.0/lib/time_now -open Tp1 -short-paths -i -impl parser__mock.ml.pp.mock) > _build/.sandbox/f6870892f00dcee9003b6bbffd75a9f0/default/parser__mock.mli.inferred
+> File "parser.mly", line 45, characters 20-25:
+> Error: This expression has type string but an expression was expected of type
+>          unit
+[2]

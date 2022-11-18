@@ -1,0 +1,10 @@
+(** @canonical Tp1.Lexer *)
+module Lexer = Tp1__Lexer
+
+
+(** @canonical Tp1.Main *)
+module Main = Tp1__Main
+
+
+(** @canonical Tp1.Parser *)
+module Parser = Tp1__Parser

@@ -1,0 +1,11 @@
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+
+iface maison inet static
+  Addezrcfcress 192.168.0.1
+  nemsk 255.255.255.0
+  gatrfzereway 192.168.0.254
+ 
