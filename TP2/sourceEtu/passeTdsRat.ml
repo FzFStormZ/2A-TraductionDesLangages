@@ -19,7 +19,12 @@ let rec analyse_tds_expression tds e = (* (AstTds.Booleen true) ===> failwith "t
         begin
             match chercherGlobalement tds ident with
             | None -> raise (IdentifiantNonDeclare ident)
-            | Some a -> AstTds.Ident a
+            | Some a -> 
+              begin
+                match info_ast_to_info a with
+                | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant ident)
+                | _ -> AstTds.Ident a
+              end
         end
     | AstSyntax.Entier i -> AstTds.Entier i
     | AstSyntax.Booleen b -> AstTds.Booleen b
@@ -31,8 +36,13 @@ let rec analyse_tds_expression tds e = (* (AstTds.Booleen true) ===> failwith "t
         begin
             match chercherGlobalement tds n with
             | None -> raise (IdentifiantNonDeclare n)
-            | Some a -> 
-                AstTds.AppelFonction (a, List.map (fun expr -> analyse_tds_expression tds expr) lp)
+            | Some a ->
+                begin
+                  match info_ast_to_info a with
+                  | InfoFun _ ->
+                    AstTds.AppelFonction (a, List.map (fun expr -> analyse_tds_expression tds expr) lp)
+                  | _ -> raise (MauvaiseUtilisationIdentifiant n)
+                end
         end
       
   
@@ -143,6 +153,7 @@ let rec analyse_tds_instruction tds oia i =
         AstTds.Retour (ne,ia)
       end
 
+  
 
 (* analyse_tds_bloc : tds -> info_ast option -> AstSyntax.bloc -> AstTds.bloc *)
 (* Paramètre tds : la table des symboles courante *)
@@ -160,6 +171,26 @@ and analyse_tds_bloc tds oia li =
    let nli = List.map (analyse_tds_instruction tdsbloc oia) li in
    (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
    nli
+
+(* *)
+let ajouter_pointeur tds n t =
+  match chercherLocalement tds n with
+  | None ->
+      (* L'identifiant n'est pas trouvé dans la tds locale,
+      il n'a donc pas été déclaré dans le bloc courant *)
+      (* Création de l'information associée à l'identfiant *)
+      let info = InfoVar (n,t,0,"") in
+      (* Création du pointeur sur l'information *)
+      let ia = info_to_info_ast info in
+      (* Ajout de l'information (pointeur) dans la tds *)
+      let _ = ajouter tds n ia in
+      
+      (t,ia);
+  | Some _ ->
+      (* L'identifiant est trouvé dans la tds locale,
+      il a donc déjà été déclaré dans le bloc courant *)
+      raise (DoubleDeclaration n)
+
 
 
 (* analyse_tds_fonction : tds -> AstSyntax.fonction -> AstTds.fonction *)
@@ -182,10 +213,12 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li)) =
         (* Génerer une nouvelle information associée à la fonction *)
         let f = InfoFun (n,t,lt) in
         let ia = info_to_info_ast f in
-        ajouter tds_fun n ia;
+        ajouter maintds n ia;
 
-  (* Analyser identifiant des types de la liste des parametres de la function *)
-  let nlp = List.map (fun (t,n) -> (t,info_to_info_ast (InfoVar(n,t,0,"")))) lp in
+  (* Analyser identifiant des types de la liste des parametres de la function *)    
+  (* Creer pointeurs pour chaque parametres de la fonction *)
+  (* Ajouter les pointeurs dans la tds Fille *)
+  let nlp = List.map (fun (t,n) -> ajouter_pointeur tds_fun n t) lp in
 
   (* Analyser les identifiants dans le bloc *)
   let lie = analyse_tds_bloc tds_fun (Some ia) li in
@@ -194,6 +227,8 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li)) =
   AstTds.Fonction(t, ia, nlp, lie)
 
 
+
+  
 (* analyser : AstSyntax.programme -> AstTds.programme *)
 (* Paramètre : le programme à analyser *)
 (* Vérifie la bonne utilisation des identifiants et tranforme le programme
