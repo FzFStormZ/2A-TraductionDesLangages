@@ -50,6 +50,11 @@ let chercherLocalement tds nom =
   | Nulle -> None
   | Courante (_,c) ->  find_opt c nom 
 
+
+(* TODO *)
+let getType info_ast =
+  let (n,t,taille,_) = info_ast_to_info (info_ast) in t
+
 (* TESTS *)
 let%test _ = chercherLocalement (creerTDSMere()) "x" = None
 let%test _ = 
@@ -346,4 +351,3 @@ let%test _ =
   | InfoVar ("x", Rat, 10 , "LB") -> true
   | _ -> false
     
-   
