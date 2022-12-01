@@ -18,7 +18,7 @@ let rec analyse_type_expression exp =
         match u,te with
         | Numerateur, Rat -> (Int, AstType.Unaire (Numerateur, ne))
         | Denominateur, Rat -> (Int, AstType.Unaire (Denominateur, ne))
-        | _, _ -> raise (TypeInattendu (_, te))
+        | _, t -> raise (TypeInattendu (t, te))
         
       end
       
@@ -81,30 +81,31 @@ let rec analyse_type_instruction i =
         | Int   -> AstType.AffichageInt ne
         | Bool  -> AstType.AffichageBool ne
         | Rat   -> AstType.AffichageRat ne
-        | _     -> raise (TypeInattendu (te, t))
+        | t     -> raise (TypeInattendu (te, t))
       end
 
-  | AstTds.Conditionnelle (c, bt, be) ->
-    let (te, ne) = analyse_type_expression c in
+  | AstTds.Conditionnelle (cond, bt, be) ->
+    let (te, ne) = analyse_type_expression cond in
     if (te = Bool) then
       let nbt = analyse_type_bloc bt in
       let nbe = analyse_type_bloc be in
       AstType.Conditionnelle (ne, nbt, nbe)
     else
-      raise (TypeInattendu (te, t))
+      raise (TypeInattendu (te, Bool))
 
-  | AstTds.TantQue (c, b) ->
-    let (te, ne) = analyse_type_expression c in
+  | AstTds.TantQue (cond, bloc) ->
+    let (te, ne) = analyse_type_expression cond in
     if (te = Bool) then
-      let nb = analyse_type_bloc b in
-      AstType.TantQue (ne, nb)
+      let nbloc = analyse_type_bloc bloc in
+      AstType.TantQue (ne, nbloc)
     else
-      raise (TypeInattendu (te, t))
+      raise (TypeInattendu (te, Bool))
 
-  | AstTds.Retour (iast, exp) ->
+  | AstTds.Retour (exp, iast) ->
     let (te, ne) = analyse_type_expression exp in
-    if (t = te) then
-      AstType.Retour (iast, ne)
+    let t = getType iast in
+    if (te = t) then
+      AstType.Retour (ne, iast)
     else
       raise (TypeInattendu (te, t))
 
@@ -116,6 +117,33 @@ and analyse_type_bloc li =
   (* Analyse des types du bloc avec la tds du nouveau bloc.*)
   List.map analyse_type_instruction li
 
+
+let ajouter_type te iast =
+  let t = getType iast in
+  if (te = t) then
+    begin
+      modifier_type_variable te iast;
+
+    end
+
+
+let analyse_type_fonction lf = 
+  match lf with
+  | (AstTds.Fonction(te,iast,lp_typ_iast,li))::tail -> 
+    begin
+      let t = getType iast in
+      if (te = t) then
+        (* TO DO *)
+        let lie = analyse_type_bloc li in
+        let lp_iast = List.map (fun (te, iast) -> ajouter_type te iast) lp in
+
+        modifier_type_fonction te lp iast;
+        AstType.Fonction(iast, lp_iast, lie)
+      else
+        raise (TypeInattendu (t, te))
+
+    end
+  
 
 (* analyser : AstTds.programme -> AstType.programme *)
 (* Paramètre : le programme à analyser *)
