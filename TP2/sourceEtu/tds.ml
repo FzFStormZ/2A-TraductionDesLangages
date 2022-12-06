@@ -53,7 +53,10 @@ let chercherLocalement tds nom =
 
 (* TODO *)
 let getType info_ast =
-  let (n,t,taille,_) = info_ast_to_info (info_ast) in t
+  match info_ast_to_info info_ast with 
+  | InfoVar(_, typ, _, _) -> typ
+  | InfoConst(_, _) -> Type.Int
+  | _ -> failwith "Internal error"
 
 (* TESTS *)
 let%test _ = chercherLocalement (creerTDSMere()) "x" = None
