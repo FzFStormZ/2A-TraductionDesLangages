@@ -110,6 +110,8 @@ let rec analyse_type_instruction i =
       AstType.Retour (ne, iast)
     else
       raise (TypeInattendu (te, t))
+  
+    | AstTds.Empty -> AstType.Empty
 
 (* analyse_tds_bloc : AstTds.bloc -> AstType.bloc *)
 (* Paramètre li : liste d'instructions à analyser *)
