@@ -8,7 +8,7 @@ type t2 = Ast.AstType.programme
 
 (* TODO *)
 let rec analyse_type_expression exp =
-  match exp with
+  match exp with    
   | AstTds.Ident iast -> (getType iast, AstType.Ident iast)
   | AstTds.Entier i -> (Type.Int, AstType.Entier i)
   | AstTds.Booleen b -> (Type.Bool, AstType.Booleen b)
@@ -121,7 +121,7 @@ and analyse_type_bloc li =
   (* Analyse des types du bloc avec la tds du nouveau bloc.*)
   List.map analyse_type_instruction li
 
-(* 
+ 
 let ajouter_type te iast =
   let t = getType iast in
   if (te = t) then
@@ -129,10 +129,8 @@ let ajouter_type te iast =
       modifier_type_variable te iast;
 
     end
-*)
-let analyse_type_fonction lf = failwith "TO DO"
 
-(*
+
 let analyse_type_fonction lf = 
   match lf with
   | (AstTds.Fonction(te,iast,lp_typ_iast,li))::tail -> 
@@ -142,14 +140,13 @@ let analyse_type_fonction lf =
         (* TO DO *)
         let lie = analyse_type_bloc li in
         let lp_iast = List.map (fun (te, iast) -> ajouter_type te iast) lp in
-
+        
         modifier_type_fonction te lp iast;
         AstType.Fonction(iast, lp_iast, lie)
       else
         raise (TypeInattendu (t, te))
 
     end
-  *)
 
 (* analyser : AstTds.programme -> AstType.programme *)
 (* Paramètre : le programme à analyser *)
@@ -158,6 +155,6 @@ en un programme de type AstType.programme *)
 (* Erreur si mauvaise utilisation des types *)
 let analyser (AstTds.Programme (lf,b)) =
   (* let nlf = analyse_type_fonction lf in *)
-  let nlf = [] in
+  let nlf = List.map analyse_type_fonction lf in
   let nb = analyse_type_bloc b in
   AstType.Programme (nlf,nb)
