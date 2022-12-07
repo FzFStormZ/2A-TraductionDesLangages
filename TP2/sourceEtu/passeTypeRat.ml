@@ -145,11 +145,13 @@ and analyse_type_bloc li =
 (* Vérifie le bon typage de la fonction *)
 (* Erreur si mauvais typage *)
 let analyse_type_fonction (AstTds.Fonction (typ, info, lp, bloc)) = 
+  (* *)
   List.iter (fun (argTyp, argInfo) -> modifier_type_variable argTyp argInfo) lp;
 
   let (paramTypeList, paramInfoList) = List.split lp in
   modifier_type_fonction typ paramTypeList info;
   let nb = analyse_type_bloc bloc in
+
   AstType.Fonction(info, paramInfoList, nb)
 
 

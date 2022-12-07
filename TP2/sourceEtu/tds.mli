@@ -63,3 +63,6 @@ val modifier_type_fonction : typ -> typ list -> info_ast -> unit
 val modifier_adresse_variable : int -> string -> info_ast -> unit
 
 val getType : info_ast -> typ
+
+(* Récupere la taille du typ donné *)
+val getTaille : typ -> int
