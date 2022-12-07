@@ -6,9 +6,12 @@ type t1 = Ast.AstTds.programme
 type t2 = Ast.AstType.programme
 
 
-(* TODO *)
+(* analyse_type_expression : AstTds.expression -> type * AstType.expression*)
+(* Paramètre e : l'expression à analyser *)
+(* Vérifie le bon typage de l'expression *)
+(* Erreur si mauvaise utilisation des types *)
 let rec analyse_type_expression exp =
-  match exp with    
+  match exp with
   | AstTds.Ident iast -> (getType iast, AstType.Ident iast)
   | AstTds.Entier i -> (Type.Int, AstType.Entier i)
   | AstTds.Booleen b -> (Type.Bool, AstType.Booleen b)
@@ -19,8 +22,8 @@ let rec analyse_type_expression exp =
       else
         begin
           match u with
-          | AstSyntax.Numerateur -> (Int, AstType.Unaire(AstType.Numerateur, ne))
-          | AstSyntax.Denominateur -> (Int, AstType.Unaire(AstType.Denominateur, ne))
+          | AstSyntax.Numerateur -> (Type.Int, AstType.Unaire(AstType.Numerateur, ne))
+          | AstSyntax.Denominateur -> (Type.Int, AstType.Unaire(AstType.Denominateur, ne))
         end
       
   | AstTds.Binaire (b, exp1, exp2) ->
@@ -47,8 +50,19 @@ let rec analyse_type_expression exp =
       (* Dans tous les autres cas on s'insurge *)
       | _, _, _ -> raise (TypeBinaireInattendu(b, te_exp1, te_exp2))
     end
+  | AstTds.AppelFonction (iast, expList) ->
+    match info_ast_to_info iast with 
+    (* Seul cas possible *)
+    | InfoFun(_, typ, typList) -> 
+        let (typListE, li) = List.split (List.map analyse_type_expression expList) in
+        (* On compare les 2 listes de "typ" de la fonctions *)
+        if (typListE = typList) then 
+          (typ, AstType.AppelFonction(iast, li))
+        else 
+          raise (TypesParametresInattendus (typListE, typList))
+    | _ -> failwith "Cas impossible"
 
-
+    
 (* analyse_tds_instruction : AstTds.instruction -> AstType.instruction *)
 (* Paramètre i : l'instruction à analyser *)
 (* Vérifie la bonne utilisation des types et tranforme l'instruction
@@ -104,14 +118,18 @@ let rec analyse_type_instruction i =
       raise (TypeInattendu (te, Type.Bool))
 
   | AstTds.Retour (exp, iast) ->
-    let (te, ne) = analyse_type_expression exp in
-    let t = getType iast in
-    if (te = t) then
-      AstType.Retour (ne, iast)
-    else
-      raise (TypeInattendu (te, t))
-  
-    | AstTds.Empty -> AstType.Empty
+    begin
+      let (te, ne) = analyse_type_expression exp in
+      match info_ast_to_info iast with
+      | InfoFun(_, typ, _) -> 
+        if (te = typ) then 
+          AstType.Retour (ne, iast)
+        else 
+          raise (TypeInattendu (te, typ))
+      | _ -> failwith "Cas impossible"
+    end
+  | AstTds.Empty -> AstType.Empty
+
 
 (* analyse_tds_bloc : AstTds.bloc -> AstType.bloc *)
 (* Paramètre li : liste d'instructions à analyser *)
@@ -121,32 +139,19 @@ and analyse_type_bloc li =
   (* Analyse des types du bloc avec la tds du nouveau bloc.*)
   List.map analyse_type_instruction li
 
- 
-let ajouter_type te iast =
-  let t = getType iast in
-  if (te = t) then
-    begin
-      modifier_type_variable te iast;
 
-    end
+(* analyse_type_fonction : AstTds.fonction -> AstType.fonction *)
+(* Paramètre : la fonction à analyser *)
+(* Vérifie le bon typage de la fonction *)
+(* Erreur si mauvais typage *)
+let analyse_type_fonction (AstTds.Fonction (typ, info, lp, bloc)) = 
+  List.iter (fun (argTyp, argInfo) -> modifier_type_variable argTyp argInfo) lp;
 
+  let (paramTypeList, paramInfoList) = List.split lp in
+  modifier_type_fonction typ paramTypeList info;
+  let nb = analyse_type_bloc bloc in
+  AstType.Fonction(info, paramInfoList, nb)
 
-let analyse_type_fonction lf = 
-  match lf with
-  | (AstTds.Fonction(te,iast,lp_typ_iast,li))::tail -> 
-    begin
-      let t = getType iast in
-      if (te = t) then
-        (* TO DO *)
-        let lie = analyse_type_bloc li in
-        let lp_iast = List.map (fun (te, iast) -> ajouter_type te iast) lp in
-        
-        modifier_type_fonction te lp iast;
-        AstType.Fonction(iast, lp_iast, lie)
-      else
-        raise (TypeInattendu (t, te))
-
-    end
 
 (* analyser : AstTds.programme -> AstType.programme *)
 (* Paramètre : le programme à analyser *)
@@ -154,7 +159,6 @@ let analyse_type_fonction lf =
 en un programme de type AstType.programme *)
 (* Erreur si mauvaise utilisation des types *)
 let analyser (AstTds.Programme (lf,b)) =
-  (* let nlf = analyse_type_fonction lf in *)
   let nlf = List.map analyse_type_fonction lf in
   let nb = analyse_type_bloc b in
   AstType.Programme (nlf,nb)
