@@ -50,6 +50,7 @@ let analyse_code_expression exp =
       (* Dans tous les autres cas on s'insurge *)
       | _ -> failwith "Cas impossible"
     end
+  | _ -> failwith "TODO"
   
   
 let rec analyse_code_bloc (li, taille_bloc) =

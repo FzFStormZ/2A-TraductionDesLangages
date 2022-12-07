@@ -1,0 +1,20 @@
+JUMP main
+
+bar
+LOAD (1) -1[LB]
+SUBR IOut
+RETURN (0) 1
+
+foo
+LOAD (1) -1[LB]
+SUBR IOut
+LOADL 26
+LOADA bar
+CALLI
+RETURN (0) 1
+
+main
+LOADL 42
+LOADA foo
+CALLI
+HALT
