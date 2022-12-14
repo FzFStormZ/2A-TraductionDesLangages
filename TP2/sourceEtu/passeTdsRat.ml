@@ -17,15 +17,15 @@ let rec analyse_tds_expression tds e = (* (AstTds.Booleen true) ===> failwith "t
     match e with
     | AstSyntax.Ident ident ->
         begin
-            match chercherGlobalement tds ident with
-            | None -> raise (IdentifiantNonDeclare ident)
-            | Some a -> 
-              begin
-                match info_ast_to_info a with
-                | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant ident)
-                | InfoConst(_, i) -> AstTds.Entier(i) (*rajouté*)
-                | _ -> AstTds.Ident a
-              end
+          match chercherGlobalement tds ident with
+          | None -> raise (IdentifiantNonDeclare ident)
+          | Some a -> 
+            begin
+              match info_ast_to_info a with
+              | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant ident)
+              | InfoConst(_, i) -> AstTds.Entier(i) (*rajouté*)
+              | _ -> AstTds.Ident a
+            end
         end
     | AstSyntax.Entier i -> AstTds.Entier i
     | AstSyntax.Booleen b -> AstTds.Booleen b

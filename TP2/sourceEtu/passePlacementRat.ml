@@ -35,12 +35,14 @@ let rec analyse_placement_instruction i reg depl =
     let nb = analyse_placement_bloc bloc reg depl in
     (AstPlacement.TantQue(exp, nb), 0)
   | AstType.Retour(exp, iast) ->
-    match info_ast_to_info iast with
-    | InfoFun(_, typ, typList) ->
-      let taille_ret = getTaille typ in
-      let taille_params =  List.fold_right (fun t res -> res + getTaille (t)) typList 0 in
-      (AstPlacement.Retour(exp, taille_ret, taille_params), 0)
-    | _ -> failwith "Cas impossible"
+    begin
+      match info_ast_to_info iast with
+      | InfoFun(_, typ, typList) ->
+        let taille_ret = getTaille typ in
+        let taille_params =  List.fold_right (fun t res -> res + getTaille (t)) typList 0 in
+        (AstPlacement.Retour(exp, taille_ret, taille_params), 0)
+      | _ -> failwith "Cas impossible"
+    end
     
 
 (* analyse_placement_bloc : AstTds.bloc -> AstType.bloc *)

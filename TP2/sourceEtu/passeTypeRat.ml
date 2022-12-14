@@ -84,9 +84,7 @@ let rec analyse_type_instruction i =
       let t = getType iast in
       let (te, ne) = analyse_type_expression exp in
       if (t = te) then
-        begin
-          AstType.Affectation (iast, ne)
-        end
+        AstType.Affectation (iast, ne)
       else 
         raise (TypeInattendu (te, t))
 
