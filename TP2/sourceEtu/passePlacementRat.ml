@@ -43,7 +43,7 @@ let rec analyse_placement_instruction i reg depl =
         (AstPlacement.Retour(exp, taille_ret, taille_params), 0)
       | _ -> failwith "Cas impossible"
     end
-    
+  | AstType.Empty -> (AstPlacement.Empty, 0)
 
 (* analyse_placement_bloc : AstTds.bloc -> AstType.bloc *)
 (* Paramètre li : liste d'instructions à analyser *)
