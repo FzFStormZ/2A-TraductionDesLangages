@@ -122,3 +122,5 @@ let analyser(AstPlacement.Programme(f,b)) =
   ^ Tam.label "main"
   ^ analyse_code_bloc b 
   ^ Tam.halt
+
+  (* https://prod.liveshare.vsengsaas.visualstudio.com/join?FDFA9F5069D051DFCDBDACE2487B5194BD26 *)
