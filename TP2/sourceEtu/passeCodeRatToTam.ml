@@ -28,25 +28,32 @@ let rec analyse_code_expression exp =
       
   | AstType.Binaire (b, exp1, exp2) ->
     begin
-      (analyse_code_expression exp1)
-      ^ (analyse_code_expression exp2)
-      ^ 
+      let nexp1 = analyse_code_expression exp1 in
+      let nexp2 = analyse_code_expression exp2 in
+
       match b with
       (* Plus valables *)
-      | PlusInt -> Tam.subr "IAdd"
-      | PlusRat -> Tam.call "ST" "RAdd"
+      | PlusInt -> nexp1 ^ nexp2 ^ Tam.subr "IAdd"
+      | PlusRat -> nexp1 ^ nexp2 ^ Tam.call "ST" "RAdd"
       (* Mult valables *)
-      | MultInt -> Tam.subr "IMul"
-      | MultRat -> Tam.call "ST" "RMul"
+      | MultInt -> nexp1 ^ nexp2 ^ Tam.subr "IMul"
+      | MultRat -> nexp1 ^ nexp2 ^ Tam.call "ST" "RMul"
       (* Eq valables *)
-      | EquInt -> Tam.subr "IEq"
-      | EquBool -> Tam.call "ST" "REq"
+      | EquInt -> nexp1 ^ nexp2 ^ Tam.subr "IEq"
+      | EquBool -> nexp1 ^ Tam.subr "B2I" ^ nexp2 ^ Tam.subr "B2I" ^ Tam.subr "IEq"
       (* Inf valable *)
-      | Inf-> Tam.subr "ILss"
+      | Inf-> nexp1 ^ nexp2 ^ Tam.subr "ILss"
       (* Fraction valable *)
-      | Fraction -> "\n"(*Tam.call "ST" "norm"*)
+      | Fraction -> nexp1 ^ nexp2 ^ "\n"(*Tam.call "ST" "norm"*)
     end
-  | _ -> failwith "TODO"
+  | AstType.AppelFonction(iast, expList) ->
+    match info_ast_to_info iast with
+    | InfoFun(n, _, _) ->
+      (* on load l'ensemble des variables utilisées dans l'appel de la fonction *)
+      List.fold_left (fun res t -> res ^ analyse_code_expression t) "" expList
+      (* call sur le nom de la fonction *)
+      ^ Tam.call "ST" n
+    | _ -> failwith "Cas impossible"
   
   
 let rec analyse_code_bloc (li, taille_bloc) =
@@ -107,16 +114,21 @@ and analyse_code_instruction i =
     ^ Tam.label lFin
   | AstPlacement.Retour(exp, tailleRet, tailleParam) ->
     (analyse_code_expression exp)
-    (* ^ dépiler variables locales *)
     ^ Tam.return tailleRet tailleParam
   | AstPlacement.Empty -> ""
     
-let analyser_code_fonction f = ""
+let analyser_code_fonction (AstPlacement.Fonction (iast, _, b)) = 
+  match info_ast_to_info iast with
+  | InfoFun(n, _, _) ->
+      Tam.label n
+      (* analyse le bloc de la fonction *)
+      ^ (analyse_code_bloc b)  (* dépiler variables locales -> est dejà fait dans analyse_code_bloc *)
+      ^ Tam.halt (* force l'arret si pas de RETURN *)
+  | _ -> failwith "Cas impossible"
 
-let analyser(AstPlacement.Programme(f,b)) =
-  Tam.jump "main"
-  ^ Code.getEntete() 
-  ^ analyser_code_fonction f
+let analyser(AstPlacement.Programme(lf,b)) =
+  Code.getEntete() (* contient déjà un JUMP main *)
+  ^ List.fold_left (fun res f -> res ^ analyser_code_fonction f) "" lf
   ^ Tam.label "main"
   ^ analyse_code_bloc b 
   ^ Tam.halt

@@ -7,7 +7,7 @@ type t2 = Ast.AstType.programme
 
 
 (* analyse_type_expression : AstTds.expression -> type * AstType.expression*)
-(* Paramètre e : l'expression à analyser *)
+(* Paramètre exp : l'expression à analyser *)
 (* Vérifie le bon typage de l'expression *)
 (* Erreur si mauvaise utilisation des types *)
 let rec analyse_type_expression exp =
@@ -17,6 +17,7 @@ let rec analyse_type_expression exp =
   | AstTds.Booleen b -> (Type.Bool, AstType.Booleen b)
   | AstTds.Unaire (u, exp) ->
       let (te, ne) = analyse_type_expression exp in 
+      (* seulement le cas d'un Rationnel *)
       if (te <> Type.Rat) then 
         raise (TypeInattendu (te, Type.Rat))
       else
@@ -45,8 +46,6 @@ let rec analyse_type_expression exp =
       | Inf, Int, Int -> (Type.Bool, AstType.Binaire (Inf, ne_exp1, ne_exp2))
       (* Fraction valable *)
       | Fraction, Int, Int -> (Type.Rat, AstType.Binaire (Fraction, ne_exp1, ne_exp2))
-      (* | Fraction, _, Int -> raise (TypeBinaireInattendu(b, te_exp1, Type.Int))
-      | Fraction, Int, _ -> raise (TypeBinaireInattendu(b, te_exp2, Type.Int)) *)
       (* Dans tous les autres cas on s'insurge *)
       | _, _, _ -> raise (TypeBinaireInattendu(b, te_exp1, te_exp2))
     end
