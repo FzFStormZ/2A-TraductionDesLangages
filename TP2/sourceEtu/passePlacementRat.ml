@@ -1,22 +1,21 @@
 open Tds
-open Exceptions
 open Ast
 
 type t1 = Ast.AstType.programme
 type t2 = Ast.AstPlacement.programme
 
 
-(* analyse_placement_expression : AstType.expression -> AstPlacement.expression *)
+(* analyse_placement_expression : AstType.expression -> AstType.expression *)
 (* Paramètre e : l'expression à analyser *)
-(* Vérifie le bon placement de l'expression *)
-(* Erreur si mauvaise utilisation des types *)
-let rec analyse_placement_expression exp = exp
+(* Aucune modification durant la passe de placement en mémoire *)
+let analyse_placement_expression exp = exp
 
 (* analyse_placement_instruction : AstTds.instruction -> AstType.instruction *)
-(* Paramètre i : l'instruction à analyser *)
-(* Vérifie la bonne utilisation des types et tranforme l'instruction
-en une instruction de type AstType.instruction *)
-(* Erreur si mauvaise utilisation des types *)
+(* Paramètres i   : l'instruction à analyser *)
+(*           reg  : registre *)
+(*           depl : deplacement par rapport au registre *)
+(* Analyser le placement en mémoire d'une instruction et tranforme 
+l'instruction en une instruction de type AstPlacement.instruction *)
 let rec analyse_placement_instruction i reg depl = 
   match i with
   | AstType.Declaration (iast, exp) ->
@@ -30,39 +29,42 @@ let rec analyse_placement_instruction i reg depl =
   | AstType.Conditionnelle(exp, bt, be) ->
     let nbt = analyse_placement_bloc bt reg depl in
     let nbe = analyse_placement_bloc be reg depl in
-    (AstPlacement.Conditionnelle(exp, nbt, nbe), 0)
+    (AstPlacement.Conditionnelle(exp, nbt, nbe), 0) (* bloc donc taille 0 *)
   | AstType.TantQue(exp, bloc) ->
     let nb = analyse_placement_bloc bloc reg depl in
-    (AstPlacement.TantQue(exp, nb), 0)
+    (AstPlacement.TantQue(exp, nb), 0) (* bloc donc taille 0 *)
   | AstType.Retour(exp, iast) ->
     begin
       match info_ast_to_info iast with
       | InfoFun(_, typ, typList) ->
-        let taille_ret = getTaille typ in
-        let taille_params =  List.fold_right (fun t res -> res + getTaille (t)) typList 0 in
-        (AstPlacement.Retour(exp, taille_ret, taille_params), 0)
+        (* taille du type de retour *)
+        let tailleRet = getTaille typ in
+        (* taille de l'ensemble des parametres *)
+        let tailleParam =  List.fold_right (fun t res -> res + getTaille (t)) typList 0 in
+        (AstPlacement.Retour(exp, tailleRet, tailleParam), 0) (* bloc donc taille 0 *)
       | _ -> failwith "Cas impossible"
     end
   | AstType.Empty -> (AstPlacement.Empty, 0)
 
-(* analyse_placement_bloc : AstTds.bloc -> AstType.bloc *)
-(* Paramètre li : liste d'instructions à analyser *)
-(* Vérifie la bonne utilisation des types et tranforme le bloc en un bloc de type AstType.bloc *)
-(* Erreur si mauvaise utilisation des types *)
-and analyse_placement_bloc li registre deplacement =
+(* analyse_placement_bloc : AstType.bloc -> AstPlacement.bloc *)
+(* Paramètres li  : liste d'instructions à analyser *)
+(*           reg  : registre *)
+(*           depl : deplacement par rapport au registre *)
+(* Analyser le placement en mémoire d'un bloc *)
+and analyse_placement_bloc li reg depl =
   match li with
   | [] -> ([], 0)
   | i::q -> 
-    let (ni, taille_i) = analyse_placement_instruction i registre deplacement in
-    let (nq, taille_q) = analyse_placement_bloc q registre (deplacement + taille_i) in
+    let (ni, taille_i) = analyse_placement_instruction i reg depl in
+    let (nq, taille_q) = analyse_placement_bloc q reg (depl + taille_i) in
     (ni::nq, taille_i + taille_q)
 
-(* analyse_placement_fonction : AstTds.fonction -> AstType.fonction *)
-(* Paramètre : la fonction à analyser *)
-(* Vérifie le bon typage de la fonction *)
-(* Erreur si mauvais typage *)
+(* analyse_placement_fonction : AstType.fonction -> AstPlacement.fonction *)
+(* Paramètre f : la fonction à analyser *)
+(* Analyser le placement en mémoire d'une fonction et transforme
+la fonction en une fonction de type AstPlacement.fonction *)
 let analyse_placement_fonction (AstType.Fonction (iast, lp, bloc)) = 
-  (* parametres *)
+  (* parametres de la fonction *)
   let rec placement_parametre lp basePointer = 
     match lp with
     | [] -> ()
@@ -76,17 +78,14 @@ let analyse_placement_fonction (AstType.Fonction (iast, lp, bloc)) =
       end
     in
   placement_parametre (List.rev lp) 0;
-  
-  (* bloc d'instructions *)
+  (* bloc d'instructions de la fonction *)
   let nb = analyse_placement_bloc bloc "LB" 3 in
-
   AstPlacement.Fonction(iast, lp, nb)
 
-(* analyser : AstTds.programme -> AstType.programme *)
-(* Paramètre : le programme à analyser *)
-(* Vérifie la bonne utilisation des types et tranforme le programme
-en un programme de type AstType.programme *)
-(* Erreur si mauvaise utilisation des types *)
+(* analyser : AstType.programme -> AstPlacement.programme *)
+(* Paramètre p : le programme à analyser *)
+(* Analyser le placement en mémoire d'un programme et tranforme le programme
+en un programme de type AstPlacement.programme *)
 let analyser (AstType.Programme (lf,b)) = 
   let nlf = List.map analyse_placement_fonction lf in
   let nb = analyse_placement_bloc b "SB" 0 in
