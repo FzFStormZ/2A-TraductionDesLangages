@@ -1,11 +1,13 @@
 open Tds
 open Ast
 open Type
-(*open Code*)
 
 type t1 = Ast.AstPlacement.programme
 type t2 = string
 
+(* analyse_code_expression : AstPlacement.expression -> string *)
+(* Paramètre exp : l'expression à analyser *)
+(* Analyser le code RAT d'une expression et le transforme en code TAM *)
 let rec analyse_code_expression exp =
   match exp with
   | AstType.Ident iast ->
@@ -55,12 +57,18 @@ let rec analyse_code_expression exp =
       ^ Tam.call "ST" n
     | _ -> failwith "Cas impossible"
   
-  
-let rec analyse_code_bloc (li, taille_bloc) =
-  Tam.push taille_bloc 
+(* analyse_code_bloc : AstPlacement.bloc -> string *)
+(* Paramètre li         : liste d'instructions à analyser *)
+(* Paramètre tailleBloc : taille du bloc à analyser *)
+(* Analyser le code RAT d'un bloc et le transforme en code TAM *)
+let rec analyse_code_bloc (li, tailleBloc) =
+  Tam.push tailleBloc 
   ^ List.fold_left (fun res t -> res ^ analyse_code_instruction t) "" li
-  ^ Tam.pop 0 taille_bloc
+  ^ Tam.pop 0 tailleBloc
 
+(* analyse_code_instruction : AstPlacement.instruction -> string *)
+(* Paramètre i    : l'instruction à analyser *)
+(* Analyser le code RAT d'une instruction et le transforme en code TAM *)
 and analyse_code_instruction i = 
   match i with
   | AstPlacement.Declaration(iast, exp) ->
@@ -116,7 +124,10 @@ and analyse_code_instruction i =
     (analyse_code_expression exp)
     ^ Tam.return tailleRet tailleParam
   | AstPlacement.Empty -> ""
-    
+
+(* analyser_code_fonction : AstPlacement.fonction -> string *)
+(* Paramètre f : la fonction à analyser *)
+(* Analyser le code RAT d'une fonction et le transforme en code TAM *)
 let analyser_code_fonction (AstPlacement.Fonction (iast, _, b)) = 
   match info_ast_to_info iast with
   | InfoFun(n, _, _) ->
@@ -126,6 +137,9 @@ let analyser_code_fonction (AstPlacement.Fonction (iast, _, b)) =
       ^ Tam.halt (* force l'arret si pas de RETURN *)
   | _ -> failwith "Cas impossible"
 
+(* analyser : AstPlacement.programme -> string *)
+(* Paramètre p : le programme à analyser *)
+(* Analyser le code RAT d'un programme et le transforme en code TAM *)
 let analyser(AstPlacement.Programme(lf,b)) =
   Code.getEntete() (* contient déjà un JUMP main *)
   ^ List.fold_left (fun res f -> res ^ analyser_code_fonction f) "" lf

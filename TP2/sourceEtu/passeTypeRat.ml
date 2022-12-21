@@ -1,3 +1,4 @@
+(* Module de la passe de typage *)
 open Tds
 open Exceptions
 open Ast
@@ -26,7 +27,6 @@ let rec analyse_type_expression exp =
           | AstSyntax.Numerateur -> (Type.Int, AstType.Unaire(AstType.Numerateur, ne))
           | AstSyntax.Denominateur -> (Type.Int, AstType.Unaire(AstType.Denominateur, ne))
         end
-      
   | AstTds.Binaire (b, exp1, exp2) ->
     begin
       let (te_exp1, ne_exp1) = analyse_type_expression exp1 in
@@ -61,10 +61,10 @@ let rec analyse_type_expression exp =
           raise (TypesParametresInattendus (typListE, typList))
     | _ -> failwith "Cas impossible"
 
-    
+
 (* analyse_tds_instruction : AstTds.instruction -> AstType.instruction *)
 (* Paramètre i : l'instruction à analyser *)
-(* Vérifie la bonne utilisation des types et tranforme l'instruction
+(* Vérifie la bonne utilisation des types et transforme l'instruction
 en une instruction de type AstType.instruction *)
 (* Erreur si mauvaise utilisation des types *)
 let rec analyse_type_instruction i =
@@ -78,7 +78,6 @@ let rec analyse_type_instruction i =
         end
       else 
         raise (TypeInattendu (te, t))
-        
   | AstTds.Affectation (iast, exp) ->
       let t = getType iast in
       let (te, ne) = analyse_type_expression exp in
@@ -86,17 +85,15 @@ let rec analyse_type_instruction i =
         AstType.Affectation (iast, ne)
       else 
         raise (TypeInattendu (te, t))
-
   | AstTds.Affichage exp ->
       let (te, ne) = analyse_type_expression exp in
       begin
         match te with
-        | Type.Int   -> AstType.AffichageInt ne
-        | Type.Bool  -> AstType.AffichageBool ne
-        | Type.Rat   -> AstType.AffichageRat ne
-        | t     -> raise (TypeInattendu (te, t)) (*raise erreur interne*)
+        | Type.Int -> AstType.AffichageInt ne
+        | Type.Bool -> AstType.AffichageBool ne
+        | Type.Rat -> AstType.AffichageRat ne
+        | t -> raise (TypeInattendu (te, t)) (*raise erreur interne*)
       end
-
   | AstTds.Conditionnelle (cond, bt, be) ->
     let (te, ne) = analyse_type_expression cond in
     if (te = Type.Bool) then
@@ -105,7 +102,6 @@ let rec analyse_type_instruction i =
       AstType.Conditionnelle (ne, nbt, nbe)
     else
       raise (TypeInattendu (te, Type.Bool))
-
   | AstTds.TantQue (cond, bloc) ->
     let (te, ne) = analyse_type_expression cond in
     if (te = Type.Bool) then
@@ -113,7 +109,6 @@ let rec analyse_type_instruction i =
       AstType.TantQue (ne, nbloc)
     else
       raise (TypeInattendu (te, Type.Bool))
-
   | AstTds.Retour (exp, iast) ->
     begin
       let (te, ne) = analyse_type_expression exp in
@@ -130,7 +125,7 @@ let rec analyse_type_instruction i =
 
 (* analyse_tds_bloc : AstTds.bloc -> AstType.bloc *)
 (* Paramètre li : liste d'instructions à analyser *)
-(* Vérifie la bonne utilisation des types et tranforme le bloc en un bloc de type AstType.bloc *)
+(* Vérifie la bonne utilisation des types et transforme le bloc en un bloc de type AstType.bloc *)
 (* Erreur si mauvaise utilisation des types *)
 and analyse_type_bloc li =
   (* Analyse des types du bloc avec la tds du nouveau bloc.*)
@@ -138,23 +133,24 @@ and analyse_type_bloc li =
 
 
 (* analyse_type_fonction : AstTds.fonction -> AstType.fonction *)
-(* Paramètre : la fonction à analyser *)
+(* Paramètre f : la fonction à analyser *)
 (* Vérifie le bon typage de la fonction *)
 (* Erreur si mauvais typage *)
 let analyse_type_fonction (AstTds.Fonction (typ, info, lp, bloc)) = 
-  (* *)
-  List.iter (fun (argTyp, argInfo) -> modifier_type_variable argTyp argInfo) lp;
-
-  let (paramTypeList, paramInfoList) = List.split lp in
-  modifier_type_fonction typ paramTypeList info;
+  (* pour chaque parametres de la fonction, on ajoute son type dans son iast *)
+  List.iter (fun (typ, iast) -> modifier_type_variable typ iast) lp;
+  (* on fait pareil pour l'iast de la fonction en ajoutant son type de retour 
+  et l'ensemble des types de ses parametres *)
+  let (typList, iastList) = List.split lp in
+  modifier_type_fonction typ typList info;
+  (* on analyse le bon typage des variables locales dans le bloc de la fonction *)
   let nb = analyse_type_bloc bloc in
-
-  AstType.Fonction(info, paramInfoList, nb)
+  AstType.Fonction(info, iastList, nb)
 
 
 (* analyser : AstTds.programme -> AstType.programme *)
 (* Paramètre : le programme à analyser *)
-(* Vérifie la bonne utilisation des types et tranforme le programme
+(* Vérifie la bonne utilisation des types et transforme le programme
 en un programme de type AstType.programme *)
 (* Erreur si mauvaise utilisation des types *)
 let analyser (AstTds.Programme (lf,b)) =

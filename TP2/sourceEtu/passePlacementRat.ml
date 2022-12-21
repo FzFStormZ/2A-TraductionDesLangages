@@ -11,10 +11,10 @@ type t2 = Ast.AstPlacement.programme
 let analyse_placement_expression exp = exp
 
 (* analyse_placement_instruction : AstTds.instruction -> AstType.instruction *)
-(* Paramètres i   : l'instruction à analyser *)
-(*           reg  : registre *)
-(*           depl : deplacement par rapport au registre *)
-(* Analyser le placement en mémoire d'une instruction et tranforme 
+(* Paramètre i    : l'instruction à analyser *)
+(* Paramètre reg  : registre *)
+(* Paramètre depl : deplacement par rapport au registre *)
+(* Analyser le placement en mémoire d'une instruction et transforme 
 l'instruction en une instruction de type AstPlacement.instruction *)
 let rec analyse_placement_instruction i reg depl = 
   match i with
@@ -47,10 +47,11 @@ let rec analyse_placement_instruction i reg depl =
   | AstType.Empty -> (AstPlacement.Empty, 0)
 
 (* analyse_placement_bloc : AstType.bloc -> AstPlacement.bloc *)
-(* Paramètres li  : liste d'instructions à analyser *)
-(*           reg  : registre *)
-(*           depl : deplacement par rapport au registre *)
-(* Analyser le placement en mémoire d'un bloc *)
+(* Paramètre li   : liste d'instructions à analyser *)
+(* Paramètre reg  : registre *)
+(* Paramètre depl : deplacement par rapport au registre *)
+(* Analyser le placement en mémoire d'un bloc et transforme
+le bloc en un bloc de type AstPlacement.bloc *)
 and analyse_placement_bloc li reg depl =
   match li with
   | [] -> ([], 0)
@@ -84,7 +85,7 @@ let analyse_placement_fonction (AstType.Fonction (iast, lp, bloc)) =
 
 (* analyser : AstType.programme -> AstPlacement.programme *)
 (* Paramètre p : le programme à analyser *)
-(* Analyser le placement en mémoire d'un programme et tranforme le programme
+(* Analyser le placement en mémoire d'un programme et transforme le programme
 en un programme de type AstPlacement.programme *)
 let analyser (AstType.Programme (lf,b)) = 
   let nlf = List.map analyse_placement_fonction lf in
