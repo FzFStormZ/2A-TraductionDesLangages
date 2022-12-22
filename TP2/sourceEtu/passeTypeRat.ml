@@ -50,16 +50,19 @@ let rec analyse_type_expression exp =
       | _, _, _ -> raise (TypeBinaireInattendu(b, te_exp1, te_exp2))
     end
   | AstTds.AppelFonction (iast, expList) ->
-    match info_ast_to_info iast with 
-    (* Seul cas possible *)
-    | InfoFun(_, typ, typList) -> 
-        let (typListE, li) = List.split (List.map analyse_type_expression expList) in
-        (* On compare les 2 listes de "typ" de la fonctions *)
-        if (typListE = typList) then 
-          (typ, AstType.AppelFonction(iast, li))
-        else 
-          raise (TypesParametresInattendus (typListE, typList))
-    | _ -> failwith "Cas impossible"
+    begin
+      match info_ast_to_info iast with 
+      (* Seul cas possible *)
+      | InfoFun(_, typ, typList) -> 
+          let (typListE, li) = List.split (List.map analyse_type_expression expList) in
+          (* On compare les 2 listes de "typ" de la fonctions *)
+          if (typListE = typList) then 
+            (typ, AstType.AppelFonction(iast, li))
+          else 
+            raise (TypesParametresInattendus (typListE, typList))
+      | _ -> failwith "Cas impossible"
+    end
+  | _ -> failwith "autres"
 
 
 (* analyse_tds_instruction : AstTds.instruction -> AstType.instruction *)

@@ -36,6 +36,10 @@ open Ast.AstSyntax
 %token MULT
 %token INF
 %token EOF
+(* token pour les pointeurs *)
+%token NEW
+%token NULL
+%token ESP
 
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
@@ -44,7 +48,9 @@ open Ast.AstSyntax
 %type <instruction> i
 %type <typ> typ
 %type <typ*string> param
-%type <expression> e 
+%type <expression> e
+(* non-terminal pour les pointeurs *)
+%type <affectable> a
 
 (* Type et définition de l'axiome *)
 %start <Ast.AstSyntax.programme> main
@@ -64,6 +70,7 @@ bloc : AO li=i* AF      {li}
 i :
 | t=typ n=ID EQUAL e1=e PV          {Declaration (t,n,e1)}
 | n=ID EQUAL e1=e PV                {Affectation (n,e1)}
+| a1=a EQUAL e1=e PV                {AffectationA (a1,e1)} (* I -> A = E*)
 | CONST n=ID EQUAL e=ENTIER PV      {Constante (n,e)}
 | PRINT e1=e PV                     {Affichage (e1)}
 | IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
@@ -71,14 +78,19 @@ i :
 | RETURN exp=e PV                   {Retour (exp)}
 
 typ :
-| BOOL    {Bool}
-| INT     {Int}
-| RAT     {Rat}
+| BOOL          {Bool}
+| INT           {Int}
+| RAT           {Rat}
+| t=typ MULT    {Pointeur t} (* TYPE -> TYPE * *)
 
 e : 
 | CALL n=ID PO lp=e* PF   {AppelFonction (n,lp)}
 | CO e1=e SLASH e2=e CF   {Binaire(Fraction,e1,e2)}
-| n=ID                    {Ident n}
+| n=ID                    {Ident n} (* plus besoin car affectable avec les pointeurs *)
+| a1=a                    {Affectable a1} (* E -> A *)
+| NULL                    {Null} (* E -> null *)
+| PO NEW t=typ PF         {New t} (* E -> (new TYPE) *)
+| ESP n=ID                {Adress n} (* E -> & id *)
 | TRUE                    {Booleen true}
 | FALSE                   {Booleen false}
 | e=ENTIER                {Entier e}
@@ -90,4 +102,7 @@ e :
 | PO e1=e INF e2=e PF     {Binaire (Inf,e1,e2)}
 | PO exp=e PF             {exp}
 
+a :
+| n=ID              {IdentA n}   (* A-> id *)
+| PO MULT a1=a PF   {Dref a1} (* A -> ( * A ) *)
 

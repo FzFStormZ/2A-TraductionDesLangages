@@ -6,6 +6,10 @@ module type PrinterAst =
 sig
   module A:Ast
 
+(* string_of_affectable : affectable -> string *)
+(* transforme un affectable en chaine de caractere *)
+val string_of_affectable : A.affectable -> string
+
 (* string_of_expression :  expression -> string *)
 (* transforme une expression en chaîne de caractère *)
 val string_of_expression : A.expression -> string
@@ -50,11 +54,21 @@ struct
     | Equ -> "= "
     | Inf -> "< "
 
+  (* Conversion des affectables *)
+  let rec string_of_affectable a = 
+    match a with
+    | IdentA n -> n ^ " "
+    | Dref a -> "(* " ^ (string_of_affectable a) ^ " "
+
   (* Conversion des expressions *)
   let rec string_of_expression e =
     match e with
     | AppelFonction (n,le) -> "call "^n^"("^((List.fold_right (fun i tq -> (string_of_expression i)^tq) le ""))^") "
     | Ident n -> n^" "
+    | Affectable a -> (string_of_affectable a) ^ " "
+    | Null -> "null"
+    | New t -> "(new " ^ (string_of_type t) ^ ") "
+    | Adress n -> "(& " ^ n ^ " "
     | Booleen b -> if b then "true " else "false "
     | Entier i -> (string_of_int i)^" "
     | Unaire (op,e1) -> (string_of_unaire op) ^ (string_of_expression e1)^" "
@@ -70,6 +84,7 @@ struct
     match i with
     | Declaration (t, n, e) -> "Declaration  : "^(string_of_type t)^" "^n^" = "^(string_of_expression e)^"\n"
     | Affectation (n,e) ->  "Affectation  : "^n^" = "^(string_of_expression e)^"\n"
+    | AffectationA (a,e) ->  "Affectation  : "^(string_of_affectable a)^" = "^(string_of_expression e)^"\n"
     | Constante (n,i) ->  "Constante  : "^n^" = "^(string_of_int i)^"\n"
     | Affichage e ->  "Affichage  : "^(string_of_expression e)^"\n"
     | Conditionnelle (c,t,e) ->  "Conditionnelle  : IF "^(string_of_expression c)^"\n"^

@@ -46,6 +46,7 @@ let rec analyse_tds_expression tds e = (* (AstTds.Booleen true) ===> failwith "t
                   | _ -> raise (MauvaiseUtilisationIdentifiant n)
                 end
         end
+    | _ -> failwith "autres"
       
 
 (* analyse_tds_instruction : tds -> info_ast option -> AstSyntax.instruction -> AstTds.instruction *)
@@ -152,7 +153,8 @@ let rec analyse_tds_instruction tds oia i =
         (* Analyse de l'expression *)
         let ne = analyse_tds_expression tds e in
         AstTds.Retour (ne,ia)
-      end
+      end 
+  | _ -> failwith "autres"
 
 
 (* analyse_tds_bloc : tds -> info_ast option -> AstSyntax.bloc -> AstTds.bloc *)

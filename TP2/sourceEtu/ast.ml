@@ -7,6 +7,7 @@ sig
    type instruction
    type fonction
    type programme
+   type affectable
 end
 
 
@@ -22,12 +23,19 @@ type unaire = Numerateur | Denominateur
 (* Opérateurs binaires de Rat *)
 type binaire = Fraction | Plus | Mult | Equ | Inf
 
+(* Affectable (pointeurs) de Rat *)
+type affectable = IdentA of string | Dref of affectable
+
 (* Expressions de Rat *)
 type expression =
   (* Appel de fonction représenté par le nom de la fonction et la liste des paramètres réels *)
   | AppelFonction of string * expression list
   (* Accès à un identifiant représenté par son nom *)
   | Ident of string
+  | Affectable of affectable
+  | Null
+  | New of typ
+  | Adress of string
   (* Booléen *)
   | Booleen of bool
   (* Entier *)
@@ -42,8 +50,9 @@ type bloc = instruction list
 and instruction =
   (* Déclaration de variable représentée par son type, son nom et l'expression d'initialisation *)
   | Declaration of typ * string * expression
-  (* Affectation d'une variable représentée par son nom et la nouvelle valeur affectée *)
+  (* Affectation d'une variable représentée par son affectable et la nouvelle valeur affectée *)
   | Affectation of string * expression
+  | AffectationA of affectable * expression
   (* Déclaration d'une constante représentée par son nom et sa valeur (entier) *)
   | Constante of string * int
   (* Affichage d'une expression *)
@@ -78,6 +87,10 @@ struct
   type expression =
     | AppelFonction of Tds.info_ast * expression list
     | Ident of Tds.info_ast (* le nom de l'identifiant est remplacé par ses informations *)
+    | Affectable of AstSyntax.affectable
+    | Null
+    | New of typ
+    | Adress of Tds.info_ast
     | Booleen of bool
     | Entier of int
     | Unaire of AstSyntax.unaire * expression
