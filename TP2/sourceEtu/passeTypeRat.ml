@@ -13,7 +13,6 @@ type t2 = Ast.AstType.programme
 (* Erreur si mauvaise utilisation des types *)
 let rec analyse_type_expression exp =
   match exp with
-  | AstTds.Ident iast -> (getType iast, AstType.Ident iast)
   | AstTds.Entier i -> (Type.Int, AstType.Entier i)
   | AstTds.Booleen b -> (Type.Bool, AstType.Booleen b)
   | AstTds.Unaire (u, exp) ->
@@ -81,13 +80,13 @@ let rec analyse_type_instruction i =
         end
       else 
         raise (TypeInattendu (te, t))
-  | AstTds.Affectation (iast, exp) ->
+  | AstTds.Affectation (iast, exp) -> failwith "TODO" (* 
       let t = getType iast in
       let (te, ne) = analyse_type_expression exp in
       if (t = te) then
         AstType.Affectation (iast, ne)
       else 
-        raise (TypeInattendu (te, t))
+        raise (TypeInattendu (te, t)) *)
   | AstTds.Affichage exp ->
       let (te, ne) = analyse_type_expression exp in
       begin

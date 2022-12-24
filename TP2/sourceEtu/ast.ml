@@ -24,14 +24,15 @@ type unaire = Numerateur | Denominateur
 type binaire = Fraction | Plus | Mult | Equ | Inf
 
 (* Affectable (pointeurs) de Rat *)
-type affectable = IdentA of string | Dref of affectable
+type affectable = 
+  | Ident of string 
+  | Dref of affectable
 
 (* Expressions de Rat *)
 type expression =
   (* Appel de fonction représenté par le nom de la fonction et la liste des paramètres réels *)
   | AppelFonction of string * expression list
-  (* Accès à un identifiant représenté par son nom *)
-  | Ident of string
+  (* Accès à un affectable représenté par son identifiant *)
   | Affectable of affectable
   | Null
   | New of typ
@@ -51,8 +52,7 @@ and instruction =
   (* Déclaration de variable représentée par son type, son nom et l'expression d'initialisation *)
   | Declaration of typ * string * expression
   (* Affectation d'une variable représentée par son affectable et la nouvelle valeur affectée *)
-  | Affectation of string * expression
-  | AffectationA of affectable * expression
+  | Affectation of affectable * expression
   (* Déclaration d'une constante représentée par son nom et sa valeur (entier) *)
   | Constante of string * int
   (* Affichage d'une expression *)
@@ -81,13 +81,18 @@ end
 module AstTds =
 struct
 
+  (* Affectable (pointeurs) de Rat *)
+  type affectable = 
+    | Ident of Tds.info_ast
+    | Dref of affectable
+
   (* Expressions existantes dans notre langage *)
   (* ~ expression de l'AST syntaxique où les noms des identifiants ont été
   remplacés par les informations associées aux identificateurs *)
   type expression =
     | AppelFonction of Tds.info_ast * expression list
-    | Ident of Tds.info_ast (* le nom de l'identifiant est remplacé par ses informations *)
-    | Affectable of AstSyntax.affectable
+    (* le nom de l'identifiant est remplacé par ses informations *)
+    | Affectable of affectable
     | Null
     | New of typ
     | Adress of Tds.info_ast
@@ -103,7 +108,7 @@ struct
   type bloc = instruction list
   and instruction =
     | Declaration of typ * Tds.info_ast * expression (* le nom de l'identifiant est remplacé par ses informations *)
-    | Affectation of  Tds.info_ast * expression (* le nom de l'identifiant est remplacé par ses informations *)
+    | Affectation of affectable * expression (* le nom de l'identifiant est remplacé par ses informations *)
     | Affichage of expression
     | Conditionnelle of expression * bloc * bloc
     | TantQue of expression * bloc
