@@ -62,6 +62,7 @@ let getTaille t =
   | Type.Int -> 1
   | Type.Rat -> 2
   | Type.Bool -> 1
+  | Type.Pointeur _ -> 1
   | _ -> failwith "Cas impossible"
 
 (* TESTS *)

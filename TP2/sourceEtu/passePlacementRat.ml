@@ -5,8 +5,13 @@ type t1 = Ast.AstType.programme
 type t2 = Ast.AstPlacement.programme
 
 
+(* analyse_placement_affectable : AstType.affectable -> AstType.affectable *)
+(* Paramètre a : l'affectable à analyser *)
+(* Aucune modification durant la passe de placement en mémoire *)
+let analyse_placement_affectable a = a
+
 (* analyse_placement_expression : AstType.expression -> AstType.expression *)
-(* Paramètre e : l'expression à analyser *)
+(* Paramètre exp : l'expression à analyser *)
 (* Aucune modification durant la passe de placement en mémoire *)
 let analyse_placement_expression exp = exp
 
@@ -21,8 +26,8 @@ let rec analyse_placement_instruction i reg depl =
   | AstType.Declaration (iast, exp) ->
     modifier_adresse_variable depl reg iast;
     (AstPlacement.Declaration (iast, exp), getTaille(getType iast))
-  | AstType.Affectation(a, exp) -> failwith "TODO"
-    (* (AstPlacement.Affectation(iast, exp), 0) *)
+  | AstType.Affectation(a, exp) -> 
+    (AstPlacement.Affectation(a, exp), 0)
   | AstType.AffichageInt(exp) -> (AstPlacement.AffichageInt(exp), 0)
   | AstType.AffichageBool(exp) -> (AstPlacement.AffichageBool(exp), 0)
   | AstType.AffichageRat(exp) -> (AstPlacement.AffichageRat(exp), 0)
