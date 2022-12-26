@@ -138,11 +138,19 @@ type unaire = Numerateur | Denominateur
 (* Opérateurs binaires existants dans Rat - résolution de la surcharge *)
 type binaire = Fraction | PlusInt | PlusRat | MultInt | MultRat | EquInt | EquBool | Inf
 
+(* Affectable (pointeurs) de Rat *)
+type affectable = 
+  | Ident of Tds.info_ast
+  | Dref of affectable
+
 (* Expressions existantes dans Rat *)
 (* = expression de AstTds *)
 type expression =
   | AppelFonction of Tds.info_ast * expression list
-  | Ident of Tds.info_ast
+  | Affectable of affectable
+  | Null
+  | New of typ
+  | Adress of Tds.info_ast
   | Booleen of bool
   | Entier of int
   | Unaire of unaire * expression
@@ -154,7 +162,7 @@ type expression =
 type bloc = instruction list
  and instruction =
   | Declaration of Tds.info_ast * expression
-  | Affectation of Tds.info_ast * expression
+  | Affectation of affectable * expression
   | AffichageInt of expression
   | AffichageRat of expression
   | AffichageBool of expression

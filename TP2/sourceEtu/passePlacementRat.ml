@@ -21,8 +21,8 @@ let rec analyse_placement_instruction i reg depl =
   | AstType.Declaration (iast, exp) ->
     modifier_adresse_variable depl reg iast;
     (AstPlacement.Declaration (iast, exp), getTaille(getType iast))
-  | AstType.Affectation(iast, exp) ->
-    (AstPlacement.Affectation(iast, exp), 0)
+  | AstType.Affectation(a, exp) -> failwith "TODO"
+    (* (AstPlacement.Affectation(iast, exp), 0) *)
   | AstType.AffichageInt(exp) -> (AstPlacement.AffichageInt(exp), 0)
   | AstType.AffichageBool(exp) -> (AstPlacement.AffichageBool(exp), 0)
   | AstType.AffichageRat(exp) -> (AstPlacement.AffichageRat(exp), 0)

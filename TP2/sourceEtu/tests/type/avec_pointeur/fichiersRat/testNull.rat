@@ -1,0 +1,5 @@
+test{
+  int * a = null;
+  rat * b = null;
+  bool * c = null;
+}

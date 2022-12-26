@@ -1,0 +1,5 @@
+test{
+  int * px = (new int);
+  (* px) = [3/4];
+
+}

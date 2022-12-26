@@ -10,13 +10,6 @@ type t2 = string
 (* Analyser le code RAT d'une expression et le transforme en code TAM *)
 let rec analyse_code_expression exp =
   match exp with
-  | AstType.Ident iast ->
-    begin
-      match info_ast_to_info iast with
-      | InfoConst(_, i) -> Tam.loadl_int i
-      | InfoVar(_, t, dep, reg) -> Tam.load (getTaille t) dep reg
-      | _ -> failwith "Cas impossible"
-    end
   | AstType.Entier i -> Tam.loadl_int i
   | AstType.Booleen b -> Tam.loadl_int (if b then 1 else 0)
   | AstType.Unaire (u, exp) ->
@@ -49,13 +42,16 @@ let rec analyse_code_expression exp =
       | Fraction -> nexp1 ^ nexp2 ^ "\n"(*Tam.call "ST" "norm"*)
     end
   | AstType.AppelFonction(iast, expList) ->
-    match info_ast_to_info iast with
-    | InfoFun(n, _, _) ->
-      (* on load l'ensemble des variables utilisées dans l'appel de la fonction *)
-      List.fold_left (fun res t -> res ^ analyse_code_expression t) "" expList
-      (* call sur le nom de la fonction *)
-      ^ Tam.call "ST" n
-    | _ -> failwith "Cas impossible"
+    begin 
+      match info_ast_to_info iast with
+      | InfoFun(n, _, _) ->
+        (* on load l'ensemble des variables utilisées dans l'appel de la fonction *)
+        List.fold_left (fun res t -> res ^ analyse_code_expression t) "" expList
+        (* call sur le nom de la fonction *)
+        ^ Tam.call "ST" n
+      | _ -> failwith "Cas impossible"
+    end
+  | _ -> failwith "TODO"
   
 (* analyse_code_bloc : AstPlacement.bloc -> string *)
 (* Paramètre li         : liste d'instructions à analyser *)
@@ -80,14 +76,14 @@ and analyse_code_instruction i =
           ^ Tam.store (getTaille t) dep reg
         | _ -> failwith "Erreur interne"
     end
-  | AstPlacement.Affectation(iast, exp) ->
-    begin
+  | AstPlacement.Affectation(a, exp) -> failwith "TODO"
+    (* begin
       match info_ast_to_info iast with
         | InfoVar(_, t, dep, reg) ->
           analyse_code_expression exp
           ^ Tam.store (getTaille t) dep reg
         | _ -> failwith "Erreur interne"
-    end
+    end *)
   | AstPlacement.AffichageInt(exp) -> 
     (analyse_code_expression exp) 
     ^ Tam.subr "Iout"

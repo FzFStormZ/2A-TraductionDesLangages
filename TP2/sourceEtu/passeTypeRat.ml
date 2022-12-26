@@ -7,6 +7,22 @@ type t1 = Ast.AstTds.programme
 type t2 = Ast.AstType.programme
 
 
+(* analyse_type_affectable : AstTds.affectable -> type * AstType.affectable*)
+(* Paramètre a : l'affectable à analyser *)
+(* Vérifie le bon typage de l'affectable *)
+(* Erreur si mauvaise utilisation des types *)
+let rec analyse_type_affectable a = 
+  match a with
+  | AstTds.Ident iast -> (getType iast, AstType.Ident iast)
+  | AstTds.Dref da ->
+      begin
+        let na = analyse_type_affectable da in
+        match na with
+        | (Pointeur t, na) -> (t, AstType.Dref na) (* envoie juste "t" et non "Pointeur t" car on déréférence pour obtenir la valeur à l'adresse *)
+        | _ -> failwith "TODO"
+      end
+
+
 (* analyse_type_expression : AstTds.expression -> type * AstType.expression*)
 (* Paramètre exp : l'expression à analyser *)
 (* Vérifie le bon typage de l'expression *)
@@ -61,7 +77,12 @@ let rec analyse_type_expression exp =
             raise (TypesParametresInattendus (typListE, typList))
       | _ -> failwith "Cas impossible"
     end
-  | _ -> failwith "autres"
+  | AstTds.Affectable a ->
+    let (t, ta) = analyse_type_affectable a in
+    (t, AstType.Affectable ta)
+  | AstTds.Null -> (Pointeur Type.Undefined, AstType.Null)
+  | AstTds.New t -> (Pointeur t, AstType.New t) (* on créée un pointeur de type t *)
+  | AstTds.Adress iast -> (Pointeur (getType iast), AstType.Adress iast) (* on renvoie l'adresse de la variable de type t *)
 
 
 (* analyse_tds_instruction : AstTds.instruction -> AstType.instruction *)
@@ -73,20 +94,21 @@ let rec analyse_type_instruction i =
   match i with
   | AstTds.Declaration (t, iast, exp) ->
       let (te, ne) = analyse_type_expression exp in
-      if (t = te) then
+      if (Type.est_compatible t te) then
         begin
           modifier_type_variable te iast;
           AstType.Declaration (iast, ne)
         end
       else 
         raise (TypeInattendu (te, t))
-  | AstTds.Affectation (iast, exp) -> failwith "TODO" (* 
-      let t = getType iast in
+  | AstTds.Affectation (a, exp) ->
+      let (t, ta) = analyse_type_affectable a in
       let (te, ne) = analyse_type_expression exp in
-      if (t = te) then
-        AstType.Affectation (iast, ne)
+      (* Si le type du Pointeur est le même dans l'exp *)
+      if (Type.est_compatible t te) then
+        AstType.Affectation (ta, ne)
       else 
-        raise (TypeInattendu (te, t)) *)
+        raise (TypeInattendu (te, t))
   | AstTds.Affichage exp ->
       let (te, ne) = analyse_type_expression exp in
       begin
