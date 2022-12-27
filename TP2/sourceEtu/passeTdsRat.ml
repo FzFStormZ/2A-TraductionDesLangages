@@ -22,16 +22,16 @@ let rec analyse_tds_affectable tds a ecriture =
       match chercherGlobalement tds ident with
       | None -> raise (IdentifiantNonDeclare ident)
       | Some iast -> 
-        begin
-          match info_ast_to_info iast with
-          | InfoVar _ -> AstTds.Ident iast
-          | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant ident)
-          | InfoConst (_,i) -> 
-            if ecriture then (* on ne peut pas écrire dans une constante *)
-              raise (MauvaiseUtilisationIdentifiant ident)
-            else 
-              AstTds.Ident iast(*  failwith "TODO" *)
-        end
+          begin
+            match info_ast_to_info iast with
+            | InfoVar _ -> AstTds.Ident iast
+            | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant ident)
+            | InfoConst _ -> 
+              if ecriture then (* on ne peut pas écrire dans une constante *)
+                raise (MauvaiseUtilisationIdentifiant ident)
+              else 
+                AstTds.Ident iast
+          end
     end
   | AstSyntax.Dref da ->
       let nda = analyse_tds_affectable tds da ecriture in

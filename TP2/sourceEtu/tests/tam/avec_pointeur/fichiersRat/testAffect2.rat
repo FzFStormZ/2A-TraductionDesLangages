@@ -1,0 +1,11 @@
+test{
+  int * px = (new int);
+  (* px) = 42;
+
+  int y = 3;
+  int * py = &y;
+  
+  (* py) = (* px);
+
+  print (* py);
+}

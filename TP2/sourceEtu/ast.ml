@@ -141,7 +141,7 @@ type binaire = Fraction | PlusInt | PlusRat | MultInt | MultRat | EquInt | EquBo
 (* Affectable (pointeurs) de Rat *)
 type affectable = 
   | Ident of Tds.info_ast
-  | Dref of affectable
+  | Dref of affectable * typ
 
 (* Expressions existantes dans Rat *)
 (* = expression de AstTds *)

@@ -16,10 +16,10 @@ let rec analyse_type_affectable a =
   | AstTds.Ident iast -> (getType iast, AstType.Ident iast)
   | AstTds.Dref da ->
       begin
-        let na = analyse_type_affectable da in
-        match na with
-        | (Pointeur t, na) -> (t, AstType.Dref na) (* envoie juste "t" et non "Pointeur t" car on déréférence pour obtenir la valeur à l'adresse *)
-        | _ -> failwith "TODO"
+        let ta, na = analyse_type_affectable da in
+        match ta with
+        | Pointeur t -> (t, AstType.Dref (na,t)) (* envoie juste "t" et non "Pointeur t" car on déréférence pour obtenir la valeur à l'adresse *)
+        | _ -> raise (TypeInattendu (ta, Pointeur Undefined))
       end
 
 
@@ -78,8 +78,8 @@ let rec analyse_type_expression exp =
       | _ -> failwith "Cas impossible"
     end
   | AstTds.Affectable a ->
-    let (t, ta) = analyse_type_affectable a in
-    (t, AstType.Affectable ta)
+    let (t, na) = analyse_type_affectable a in
+    (t, AstType.Affectable na)
   | AstTds.Null -> (Pointeur Type.Undefined, AstType.Null)
   | AstTds.New t -> (Pointeur t, AstType.New t) (* on créée un pointeur de type t *)
   | AstTds.Adress iast -> (Pointeur (getType iast), AstType.Adress iast) (* on renvoie l'adresse de la variable de type t *)
@@ -102,13 +102,13 @@ let rec analyse_type_instruction i =
       else 
         raise (TypeInattendu (te, t))
   | AstTds.Affectation (a, exp) ->
-      let (t, ta) = analyse_type_affectable a in
+      let (ta, na) = analyse_type_affectable a in
       let (te, ne) = analyse_type_expression exp in
       (* Si le type du Pointeur est le même dans l'exp *)
-      if (Type.est_compatible t te) then
-        AstType.Affectation (ta, ne)
+      if (Type.est_compatible ta te) then
+        AstType.Affectation (na, ne)
       else 
-        raise (TypeInattendu (te, t))
+        raise (TypeInattendu (te, ta))
   | AstTds.Affichage exp ->
       let (te, ne) = analyse_type_expression exp in
       begin

@@ -5,6 +5,27 @@ open Type
 type t1 = Ast.AstPlacement.programme
 type t2 = string
 
+
+(* analyse_code_expression : AstPlacement.expression -> string *)
+(* Paramètre exp : l'expression à analyser *)
+(* Analyser le code RAT d'une expression et le transforme en code TAM *)
+let rec analyse_code_affectable a ecriture =
+  match a with
+  | AstType.Ident iast -> 
+    begin
+      match info_ast_to_info iast with (* Idem *)
+      | InfoConst(_, i) -> Tam.loadl_int i
+      | InfoVar(_, t, dep, reg) -> Tam.load (getTaille t) dep reg
+      | _ -> failwith "Cas impossible"
+    end
+  | AstType.Dref(da, ta) -> (* ajout du type dans la passe de typage à Dref pour cette passe *)
+    let s = analyse_code_affectable da false in
+    if ecriture then (* faire la difference entre les deux etats de Dref (a droite ou a gauche de l'affectation) *)
+      s ^ Tam.storei (getTaille ta)
+    else
+      s ^ Tam.loadi (getTaille ta)
+      
+
 (* analyse_code_expression : AstPlacement.expression -> string *)
 (* Paramètre exp : l'expression à analyser *)
 (* Analyser le code RAT d'une expression et le transforme en code TAM *)
@@ -13,14 +34,13 @@ let rec analyse_code_expression exp =
   | AstType.Entier i -> Tam.loadl_int i
   | AstType.Booleen b -> Tam.loadl_int (if b then 1 else 0)
   | AstType.Unaire (u, exp) ->
-      (analyse_code_expression exp)
-      ^
-      begin
-        match u with
-        | AstType.Numerateur -> Tam.pop 0 1 (* supprime celui en haut de la pile *)
-        | AstType.Denominateur -> Tam.pop 1 1 (* créé un trou -> store ce qu'il y a en haut en bas *)
-      end
-      
+    (analyse_code_expression exp)
+    ^
+    begin
+      match u with
+      | AstType.Numerateur -> Tam.pop 0 1 (* supprime celui en haut de la pile *)
+      | AstType.Denominateur -> Tam.pop 1 1 (* créé un trou -> store ce qu'il y a en haut en bas *)
+    end
   | AstType.Binaire (b, exp1, exp2) ->
     begin
       let nexp1 = analyse_code_expression exp1 in
@@ -51,7 +71,20 @@ let rec analyse_code_expression exp =
         ^ Tam.call "ST" n
       | _ -> failwith "Cas impossible"
     end
-  | _ -> failwith "TODO"
+    | AstType.Affectable a ->
+      (analyse_code_affectable a false) (* affectable en tant que expression est en lecture *)
+    | AstType.Null -> 
+      Tam.loadl_int 0 (* idk ??*)
+    | AstType.New t ->
+      Tam.loadl_int (getTaille t)
+      ^ Tam.subr "MAlloc"
+    | AstType.Adress iast -> 
+      begin
+        match info_ast_to_info iast with
+        | InfoVar(_, _, dep, reg) -> 
+          Tam.loada dep reg (* on empile l'adresse de la variable *)
+        | _ -> failwith "Cas impossible"
+      end
   
 (* analyse_code_bloc : AstPlacement.bloc -> string *)
 (* Paramètre li         : liste d'instructions à analyser *)
@@ -76,14 +109,9 @@ and analyse_code_instruction i =
           ^ Tam.store (getTaille t) dep reg
         | _ -> failwith "Erreur interne"
     end
-  | AstPlacement.Affectation(a, exp) -> failwith "TODO"
-    (* begin
-      match info_ast_to_info iast with
-        | InfoVar(_, t, dep, reg) ->
-          analyse_code_expression exp
-          ^ Tam.store (getTaille t) dep reg
-        | _ -> failwith "Erreur interne"
-    end *)
+  | AstPlacement.Affectation(a, exp) ->
+    (analyse_code_expression exp)
+    ^(analyse_code_affectable a true) (* affectable en tant qu'instruction est en ecriture *)
   | AstPlacement.AffichageInt(exp) -> 
     (analyse_code_expression exp) 
     ^ Tam.subr "Iout"
