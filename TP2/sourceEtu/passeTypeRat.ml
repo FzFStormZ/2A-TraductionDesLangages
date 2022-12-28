@@ -7,7 +7,7 @@ type t1 = Ast.AstTds.programme
 type t2 = Ast.AstType.programme
 
 
-(* analyse_type_affectable : AstTds.affectable -> type * AstType.affectable*)
+(* analyse_type_affectable : AstTds.affectable -> type * AstType.affectable *)
 (* Paramètre a : l'affectable à analyser *)
 (* Vérifie le bon typage de l'affectable *)
 (* Erreur si mauvaise utilisation des types *)
@@ -43,43 +43,43 @@ let rec analyse_type_expression exp =
           | AstSyntax.Denominateur -> (Type.Int, AstType.Unaire(AstType.Denominateur, ne))
         end
   | AstTds.Binaire (b, exp1, exp2) ->
-    begin
-      let (te_exp1, ne_exp1) = analyse_type_expression exp1 in
-      let (te_exp2, ne_exp2) = analyse_type_expression exp2 in
+      begin
+        let (te_exp1, ne_exp1) = analyse_type_expression exp1 in
+        let (te_exp2, ne_exp2) = analyse_type_expression exp2 in
 
-      match b, te_exp1, te_exp2 with
-      (* Plus valables *)
-      | Plus, Int, Int -> (Type.Int, AstType.Binaire (PlusInt, ne_exp1, ne_exp2))
-      | Plus, Rat, Rat -> (Type.Rat, AstType.Binaire (PlusRat, ne_exp1, ne_exp2))
-      (* Mult valables *)
-      | Mult, Int, Int -> (Type.Int, AstType.Binaire (MultInt, ne_exp1, ne_exp2))
-      | Mult, Rat, Rat -> (Type.Rat, AstType.Binaire (MultRat, ne_exp1, ne_exp2))
-      (* Eq valables *)
-      | Equ, Int, Int -> (Type.Bool, AstType.Binaire (EquInt, ne_exp1, ne_exp2))
-      | Equ, Bool, Bool -> (Type.Bool, AstType.Binaire (EquBool, ne_exp1, ne_exp2))
-      (* Inf valable *)
-      | Inf, Int, Int -> (Type.Bool, AstType.Binaire (Inf, ne_exp1, ne_exp2))
-      (* Fraction valable *)
-      | Fraction, Int, Int -> (Type.Rat, AstType.Binaire (Fraction, ne_exp1, ne_exp2))
-      (* Dans tous les autres cas on s'insurge *)
-      | _, _, _ -> raise (TypeBinaireInattendu(b, te_exp1, te_exp2))
-    end
+        match b, te_exp1, te_exp2 with
+        (* Plus valables *)
+        | Plus, Int, Int -> (Type.Int, AstType.Binaire (PlusInt, ne_exp1, ne_exp2))
+        | Plus, Rat, Rat -> (Type.Rat, AstType.Binaire (PlusRat, ne_exp1, ne_exp2))
+        (* Mult valables *)
+        | Mult, Int, Int -> (Type.Int, AstType.Binaire (MultInt, ne_exp1, ne_exp2))
+        | Mult, Rat, Rat -> (Type.Rat, AstType.Binaire (MultRat, ne_exp1, ne_exp2))
+        (* Eq valables *)
+        | Equ, Int, Int -> (Type.Bool, AstType.Binaire (EquInt, ne_exp1, ne_exp2))
+        | Equ, Bool, Bool -> (Type.Bool, AstType.Binaire (EquBool, ne_exp1, ne_exp2))
+        (* Inf valable *)
+        | Inf, Int, Int -> (Type.Bool, AstType.Binaire (Inf, ne_exp1, ne_exp2))
+        (* Fraction valable *)
+        | Fraction, Int, Int -> (Type.Rat, AstType.Binaire (Fraction, ne_exp1, ne_exp2))
+        (* Dans tous les autres cas on s'insurge *)
+        | _, _, _ -> raise (TypeBinaireInattendu(b, te_exp1, te_exp2))
+      end
   | AstTds.AppelFonction (iast, expList) ->
-    begin
-      match info_ast_to_info iast with 
-      (* Seul cas possible *)
-      | InfoFun(_, typ, typList) -> 
-          let (typListE, li) = List.split (List.map analyse_type_expression expList) in
-          (* On compare les 2 listes de "typ" de la fonctions *)
-          if (typListE = typList) then 
-            (typ, AstType.AppelFonction(iast, li))
-          else 
-            raise (TypesParametresInattendus (typListE, typList))
-      | _ -> failwith "Cas impossible"
-    end
+      begin
+        match info_ast_to_info iast with 
+        (* Seul cas possible *)
+        | InfoFun(_, typ, typList) -> 
+            let (typListE, li) = List.split (List.map analyse_type_expression expList) in
+            (* On compare les 2 listes de "typ" de la fonctions *)
+            if (typListE = typList) then 
+              (typ, AstType.AppelFonction(iast, li))
+            else 
+              raise (TypesParametresInattendus (typListE, typList))
+        | _ -> failwith "Cas impossible"
+      end
   | AstTds.Affectable a ->
-    let (t, na) = analyse_type_affectable a in
-    (t, AstType.Affectable na)
+      let (t, na) = analyse_type_affectable a in
+      (t, AstType.Affectable na)
   | AstTds.Null -> (Pointeur Type.Undefined, AstType.Null)
   | AstTds.New t -> (Pointeur t, AstType.New t) (* on créée un pointeur de type t *)
   | AstTds.Adress iast -> (Pointeur (getType iast), AstType.Adress iast) (* on renvoie l'adresse de la variable de type t *)
@@ -119,31 +119,38 @@ let rec analyse_type_instruction i =
         | t -> raise (TypeInattendu (te, t)) (*raise erreur interne*)
       end
   | AstTds.Conditionnelle (cond, bt, be) ->
-    let (te, ne) = analyse_type_expression cond in
-    if (te = Type.Bool) then
-      let nbt = analyse_type_bloc bt in
-      let nbe = analyse_type_bloc be in
-      AstType.Conditionnelle (ne, nbt, nbe)
-    else
-      raise (TypeInattendu (te, Type.Bool))
+      let (te, ne) = analyse_type_expression cond in
+      if (te = Type.Bool) then
+        let nbt = analyse_type_bloc bt in
+        let nbe = analyse_type_bloc be in
+        AstType.Conditionnelle (ne, nbt, nbe)
+      else
+        raise (TypeInattendu (te, Type.Bool))
+  | AstTds.ElseOptionnel (cond, bt) ->
+      let (te, ne) = analyse_type_expression cond in
+      if (te = Type.Bool) then
+        let nbt = analyse_type_bloc bt in
+        AstType.ElseOptionnel (ne, nbt)
+      else
+        raise (TypeInattendu (te, Type.Bool))
   | AstTds.TantQue (cond, bloc) ->
-    let (te, ne) = analyse_type_expression cond in
-    if (te = Type.Bool) then
-      let nbloc = analyse_type_bloc bloc in
-      AstType.TantQue (ne, nbloc)
-    else
-      raise (TypeInattendu (te, Type.Bool))
+      let (te, ne) = analyse_type_expression cond in
+      if (te = Type.Bool) then
+        let nbloc = analyse_type_bloc bloc in
+        AstType.TantQue (ne, nbloc)
+      else
+        raise (TypeInattendu (te, Type.Bool))
   | AstTds.Retour (exp, iast) ->
-    begin
-      let (te, ne) = analyse_type_expression exp in
-      match info_ast_to_info iast with
-      | InfoFun(_, typ, _) -> 
-        if (te = typ) then 
-          AstType.Retour (ne, iast)
-        else 
-          raise (TypeInattendu (te, typ))
-      | _ -> failwith "Cas impossible"
-    end
+      begin
+        let (te, ne) = analyse_type_expression exp in
+        match info_ast_to_info iast with
+        | InfoFun(_, typ, _) -> 
+          if (te = typ) then 
+            AstType.Retour (ne, iast)
+          else 
+            raise (TypeInattendu (te, typ))
+        | _ -> failwith "Cas impossible"
+      end
   | AstTds.Empty -> AstType.Empty
 
 

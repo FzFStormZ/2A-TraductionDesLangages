@@ -64,5 +64,3 @@ val modifier_adresse_variable : int -> string -> info_ast -> unit
 
 val getType : info_ast -> typ
 
-(* Récupere la taille du typ donné *)
-val getTaille : typ -> int

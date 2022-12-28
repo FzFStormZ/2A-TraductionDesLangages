@@ -25,20 +25,12 @@ let runtam ratfile =
 (** Chemin d'accès aux fichiers de test *)
 (****************************************)
 
-let pathFichiersRat = "../../../../../tests/tam/avec_pointeur/fichiersRat/"
+let pathFichiersRat = "../../../../../tests/tam/avec_bloc_else_opt/fichiersRat/"
 
 (**********)
 (*  TESTS *)
 (**********)
 
-let%expect_test "testAffect" =
-  runtam (pathFichiersRat^"testAffect.rat");
-  [%expect{| 42 |}]
-
-let%expect_test "testAdress" =
-  runtam (pathFichiersRat^"testAdress.rat");
-  [%expect{| 3 |}]
-
-  let%expect_test "testAffect2" =
-  runtam (pathFichiersRat^"testAffect2.rat");
-  [%expect{| 42 |}]
+let%expect_test "testGrosDebugCorrect" =
+  runtam (pathFichiersRat^"testGrosDebugCorrect.rat");
+  [%expect{| 6 |}]

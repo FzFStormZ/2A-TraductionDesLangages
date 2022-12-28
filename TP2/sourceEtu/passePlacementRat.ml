@@ -1,5 +1,6 @@
 open Tds
 open Ast
+open Type
 
 type t1 = Ast.AstType.programme
 type t2 = Ast.AstPlacement.programme
@@ -24,31 +25,33 @@ l'instruction en une instruction de type AstPlacement.instruction *)
 let rec analyse_placement_instruction i reg depl = 
   match i with
   | AstType.Declaration (iast, exp) ->
-    modifier_adresse_variable depl reg iast;
-    (AstPlacement.Declaration (iast, exp), getTaille(getType iast))
-  | AstType.Affectation(a, exp) -> 
-    (AstPlacement.Affectation(a, exp), 0)
+      modifier_adresse_variable depl reg iast;
+      (AstPlacement.Declaration (iast, exp), getTaille(getType iast))
+  | AstType.Affectation(a, exp) -> (AstPlacement.Affectation(a, exp), 0)
   | AstType.AffichageInt(exp) -> (AstPlacement.AffichageInt(exp), 0)
   | AstType.AffichageBool(exp) -> (AstPlacement.AffichageBool(exp), 0)
   | AstType.AffichageRat(exp) -> (AstPlacement.AffichageRat(exp), 0)
   | AstType.Conditionnelle(exp, bt, be) ->
-    let nbt = analyse_placement_bloc bt reg depl in
-    let nbe = analyse_placement_bloc be reg depl in
-    (AstPlacement.Conditionnelle(exp, nbt, nbe), 0) (* bloc donc taille 0 *)
+      let nbt = analyse_placement_bloc bt reg depl in
+      let nbe = analyse_placement_bloc be reg depl in
+      (AstPlacement.Conditionnelle(exp, nbt, nbe), 0) (* bloc donc taille 0 *)
+  | AstType.ElseOptionnel(exp, bt) ->
+      let nbt = analyse_placement_bloc bt reg depl in
+      (AstPlacement.ElseOptionnel(exp, nbt), 0) (* bloc donc taille 0 *)
   | AstType.TantQue(exp, bloc) ->
-    let nb = analyse_placement_bloc bloc reg depl in
-    (AstPlacement.TantQue(exp, nb), 0) (* bloc donc taille 0 *)
+      let nb = analyse_placement_bloc bloc reg depl in
+      (AstPlacement.TantQue(exp, nb), 0) (* bloc donc taille 0 *)
   | AstType.Retour(exp, iast) ->
-    begin
-      match info_ast_to_info iast with
-      | InfoFun(_, typ, typList) ->
-        (* taille du type de retour *)
-        let tailleRet = getTaille typ in
-        (* taille de l'ensemble des parametres *)
-        let tailleParam =  List.fold_right (fun t res -> res + getTaille (t)) typList 0 in
-        (AstPlacement.Retour(exp, tailleRet, tailleParam), 0) (* bloc donc taille 0 *)
-      | _ -> failwith "Cas impossible"
-    end
+      begin
+        match info_ast_to_info iast with
+        | InfoFun(_, typ, typList) ->
+          (* taille du type de retour *)
+          let tailleRet = getTaille typ in
+          (* taille de l'ensemble des parametres *)
+          let tailleParam =  List.fold_right (fun t res -> res + getTaille (t)) typList 0 in
+          (AstPlacement.Retour(exp, tailleRet, tailleParam), 0) (* bloc donc taille 0 *)
+        | _ -> failwith "Cas impossible"
+      end
   | AstType.Empty -> (AstPlacement.Empty, 0)
 
 (* analyse_placement_bloc : AstType.bloc -> AstPlacement.bloc *)
@@ -75,17 +78,19 @@ let analyse_placement_fonction (AstType.Fonction (iast, lp, bloc)) =
     match lp with
     | [] -> ()
     | head::tail ->
-      begin
-        match info_ast_to_info head with
-        | InfoVar (_, t, _, _) ->
-          modifier_adresse_variable (basePointer - getTaille t) "LB" head;
-          placement_parametre tail (basePointer - getTaille t)
-        | _ -> failwith "Cas impossible"
-      end
+        begin
+          match info_ast_to_info head with
+          | InfoVar (_, t, _, _) ->
+            modifier_adresse_variable (basePointer - getTaille t) "LB" head;
+            placement_parametre tail (basePointer - getTaille t)
+          | _ -> failwith "Cas impossible"
+        end
     in
+    
   placement_parametre (List.rev lp) 0;
   (* bloc d'instructions de la fonction *)
   let nb = analyse_placement_bloc bloc "LB" 3 in
+
   AstPlacement.Fonction(iast, lp, nb)
 
 (* analyser : AstType.programme -> AstPlacement.programme *)

@@ -22,16 +22,16 @@ let rec analyse_tds_affectable tds a ecriture =
       match chercherGlobalement tds ident with
       | None -> raise (IdentifiantNonDeclare ident)
       | Some iast -> 
-          begin
-            match info_ast_to_info iast with
-            | InfoVar _ -> AstTds.Ident iast
-            | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant ident)
-            | InfoConst _ -> 
-              if ecriture then (* on ne peut pas écrire dans une constante *)
-                raise (MauvaiseUtilisationIdentifiant ident)
-              else 
-                AstTds.Ident iast
-          end
+        begin
+          match info_ast_to_info iast with
+          | InfoVar _ -> AstTds.Ident iast
+          | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant ident)
+          | InfoConst _ -> 
+            if ecriture then (* on ne peut pas écrire dans une constante *)
+              raise (MauvaiseUtilisationIdentifiant ident)
+            else 
+              AstTds.Ident iast
+        end
     end
   | AstSyntax.Dref da ->
       let nda = analyse_tds_affectable tds da ecriture in
@@ -47,36 +47,32 @@ let rec analyse_tds_expression tds e =
   match e with
   | AstSyntax.Entier i -> AstTds.Entier i
   | AstSyntax.Booleen b -> AstTds.Booleen b
-  | AstSyntax.Binaire (op, exp1, exp2) -> 
-      AstTds.Binaire (op, analyse_tds_expression tds exp1, analyse_tds_expression tds exp2)
-  | AstSyntax.Unaire (unaire, expression) -> 
-      AstTds.Unaire (unaire, analyse_tds_expression tds expression)
+  | AstSyntax.Binaire (op, exp1, exp2) -> AstTds.Binaire (op, analyse_tds_expression tds exp1, analyse_tds_expression tds exp2)
+  | AstSyntax.Unaire (unaire, expression) -> AstTds.Unaire (unaire, analyse_tds_expression tds expression)
   | AstSyntax.AppelFonction (n, lp) -> 
       begin
         match chercherGlobalement tds n with
         | None -> raise (IdentifiantNonDeclare n)
         | Some a ->
-            begin
-              match info_ast_to_info a with
-              | InfoFun _ ->
-                AstTds.AppelFonction (a, List.map (fun expr -> analyse_tds_expression tds expr) lp)
-              | _ -> raise (MauvaiseUtilisationIdentifiant n)
-            end
+          begin
+            match info_ast_to_info a with
+            | InfoFun _ ->
+              AstTds.AppelFonction (a, List.map (fun expr -> analyse_tds_expression tds expr) lp)
+            | _ -> raise (MauvaiseUtilisationIdentifiant n)
+          end
       end
-  | AstSyntax.Affectable a -> 
-      let na = analyse_tds_affectable tds a false in
-      AstTds.Affectable na
+  | AstSyntax.Affectable a -> AstTds.Affectable (analyse_tds_affectable tds a false)
   | AstSyntax.Adress ident ->
-    begin
-      match chercherGlobalement tds ident with
-      | None -> raise (IdentifiantNonDeclare ident)
-      | Some iast -> 
-        begin
-          match info_ast_to_info iast with
-          | InfoVar _ -> AstTds.Adress iast
-          | _ -> raise (MauvaiseUtilisationIdentifiant ident)
-        end
-    end
+      begin
+        match chercherGlobalement tds ident with
+        | None -> raise (IdentifiantNonDeclare ident)
+        | Some iast -> 
+          begin
+            match info_ast_to_info iast with
+            | InfoVar _ -> AstTds.Adress iast
+            | _ -> raise (MauvaiseUtilisationIdentifiant ident)
+          end
+      end
   | AstSyntax.Null -> AstTds.Null
   | AstSyntax.New t -> AstTds.New t
   
@@ -148,6 +144,13 @@ let rec analyse_tds_instruction tds oia i =
       let east = analyse_tds_bloc tds oia e in
       (* Renvoie la nouvelle structure de la conditionnelle *)
       AstTds.Conditionnelle (nc, tast, east)
+  | AstSyntax.ElseOptionnel (c,t) ->
+      (* Analyse de la condition *)
+      let nc = analyse_tds_expression tds c in
+      (* Analyse du bloc then *)
+      let tast = analyse_tds_bloc tds oia t in
+      (* Renvoie la nouvelle structure de la conditionnelle *)
+      AstTds.ElseOptionnel (nc, tast)
   | AstSyntax.TantQue (c,b) ->
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in

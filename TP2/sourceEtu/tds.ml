@@ -57,13 +57,6 @@ let getType info_ast =
   | InfoVar(_, typ, _, _) -> typ
   | _ -> failwith "Cas impossible"
 
-let getTaille t =
-  match t with 
-  | Type.Int -> 1
-  | Type.Rat -> 2
-  | Type.Bool -> 1
-  | Type.Pointeur _ -> 1
-  | _ -> failwith "Cas impossible"
 
 (* TESTS *)
 let%test _ = chercherLocalement (creerTDSMere()) "x" = None
