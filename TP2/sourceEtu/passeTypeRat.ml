@@ -83,6 +83,19 @@ let rec analyse_type_expression exp =
   | AstTds.Null -> (Pointeur Type.Undefined, AstType.Null)
   | AstTds.New t -> (Pointeur t, AstType.New t) (* on créée un pointeur de type t *)
   | AstTds.Adress iast -> (Pointeur (getType iast), AstType.Adress iast) (* on renvoie l'adresse de la variable de type t *)
+  | AstTds.Ternaire (c, expVrai, expFaux) ->
+      let (t, nc) = analyse_type_expression c in
+      (* On vérifie d'abord que la condition soit de type Bool obligatoirement (utilisation de Binaire) *)
+      if (t = Type.Bool) then
+        let (tev, nev) = analyse_type_expression expVrai in
+        let (tef, nef) = analyse_type_expression expFaux in
+        (* Puis, on vérifie que les types des valeurs soient les mêmes *)
+        if (Type.est_compatible tev tef) then
+          (tev, AstType.Ternaire (nc, nev, nef))
+        else
+          raise (TypeTernaireDifferent(tev, tef))
+      else
+        raise (TypeInattendu(t, Type.Bool))
 
 
 (* analyse_tds_instruction : AstTds.instruction -> AstType.instruction *)

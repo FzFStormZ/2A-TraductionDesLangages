@@ -8,6 +8,7 @@ type t1 = Ast.AstSyntax.programme
 type t2 = Ast.AstTds.programme
 
 
+
 (* analyse_tds_affectable : tds -> AstSyntax.affectable -> AstTds.affectable *)
 (* Paramètre tds      : la table des symboles courante *)
 (* Paramètre a        : l'affectable à analyser *)
@@ -36,6 +37,7 @@ let rec analyse_tds_affectable tds a ecriture =
   | AstSyntax.Dref da ->
       let nda = analyse_tds_affectable tds da ecriture in
       AstTds.Dref nda
+
 
 (* analyse_tds_expression : tds -> AstSyntax.expression -> AstTds.expression *)
 (* Paramètre tds  : la table des symboles courante *)
@@ -75,7 +77,9 @@ let rec analyse_tds_expression tds e =
       end
   | AstSyntax.Null -> AstTds.Null
   | AstSyntax.New t -> AstTds.New t
-  
+  | AstSyntax.Ternaire (c, expVrai, expFaux) -> 
+      AstTds.Ternaire (analyse_tds_expression tds c, analyse_tds_expression tds expVrai, analyse_tds_expression tds expFaux)
+
 
 (* analyse_tds_instruction : tds -> info_ast option -> AstSyntax.instruction -> AstTds.instruction *)
 (* Paramètre tds : la table des symboles courante *)
@@ -189,6 +193,7 @@ and analyse_tds_bloc tds oia li =
    (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
    nli
 
+
 (* *)
 let ajouter_pointeur tds n t =
   match chercherLocalement tds n with
@@ -207,7 +212,6 @@ let ajouter_pointeur tds n t =
       (* L'identifiant est trouvé dans la tds locale,
       il a donc déjà été déclaré dans le bloc courant *)
       raise (DoubleDeclaration n)
-
 
 
 (* analyse_tds_fonction : tds -> AstSyntax.fonction -> AstTds.fonction *)

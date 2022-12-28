@@ -75,20 +75,36 @@ let rec analyse_code_expression exp =
           ^ Tam.call "ST" n
         | _ -> failwith "Cas impossible"
       end
-      | AstType.Affectable a ->
-        (analyse_code_affectable a false) (* affectable en tant que expression est en lecture *)
-      | AstType.Null -> 
-        Tam.loadl_int 0 (* idk ??*)
-      | AstType.New t ->
-        Tam.loadl_int (getTaille t)
-        ^ Tam.subr "MAlloc"
-      | AstType.Adress iast -> 
-        begin
-          match info_ast_to_info iast with
-          | InfoVar(_, _, dep, reg) -> 
-            Tam.loada dep reg (* on empile l'adresse de la variable *)
-          | _ -> failwith "Cas impossible"
-        end
+  | AstType.Affectable a ->
+      (analyse_code_affectable a false) (* affectable en tant que expression est en lecture *)
+  | AstType.Null -> 
+      Tam.loadl_int 0 (* idk ??*)
+  | AstType.New t ->
+      Tam.loadl_int (getTaille t)
+      ^ Tam.subr "MAlloc"
+  | AstType.Adress iast -> 
+      begin
+        match info_ast_to_info iast with
+        | InfoVar(_, _, dep, reg) -> 
+          Tam.loada dep reg (* on empile l'adresse de la variable *)
+        | _ -> failwith "Cas impossible"
+      end
+  | AstType.Ternaire (c, expVrai, expFaux) ->
+      let lFaux = Code.getEtiquette() in
+      let lFin = Code.getEtiquette() in
+
+      (* Condition du de l'op ternaire *)
+      (analyse_code_expression c)
+      ^ Tam.jumpif 0 lFaux
+      (* bloc Condition Vraie *)
+      ^ (analyse_code_expression expVrai)
+      ^ Tam.jump lFin
+      (* bloc Condition Fausse *)
+      ^ Tam.label lFaux
+      ^ (analyse_code_expression expFaux)
+      (* Fin *)
+      ^ Tam.label lFin
+    
   
 (* analyse_code_bloc : AstPlacement.bloc -> string *)
 (* Paramètre li         : liste d'instructions à analyser *)
@@ -128,6 +144,7 @@ and analyse_code_instruction i =
   | AstPlacement.TantQue(exp, bloc) ->
       let lDebut = Code.getEtiquette() in
       let lFin = Code.getEtiquette() in
+
       Tam.label lDebut 
       ^ (analyse_code_expression exp) (* condition d'arret *)
       ^ Tam.jumpif 0 lFin
@@ -137,6 +154,7 @@ and analyse_code_instruction i =
     | AstPlacement.Conditionnelle(exp, bt, be) ->
       let lDebutElse = Code.getEtiquette() in
       let lFin = Code.getEtiquette() in
+
       (* Condition du If *)
       (analyse_code_expression exp)
       ^ Tam.jumpif 0 lDebutElse
@@ -150,6 +168,7 @@ and analyse_code_instruction i =
       ^ Tam.label lFin
   | AstPlacement.ElseOptionnel(exp, bt) ->
       let lFin = Code.getEtiquette() in
+
       (* Condition du If *)
       (analyse_code_expression exp)
       ^ Tam.jumpif 0 lFin

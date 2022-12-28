@@ -40,6 +40,9 @@ open Ast.AstSyntax
 %token NEW
 %token NULL
 %token ESP
+(* token pour la condi sous forme ternaire *)
+%token PI
+%token DP
 
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
@@ -89,19 +92,20 @@ typ :
 | t=typ MULT    {Pointeur t} (* TYPE -> TYPE* *)
 
 e : 
-| CALL n=ID PO lp=e* PF   {AppelFonction (n,lp)}
-| CO e1=e SLASH e2=e CF   {Binaire(Fraction,e1,e2)}
-| af=a                    {Affectable af} (* E -> A *)
-| NULL                    {Null} (* E -> null *)
-| PO NEW t=typ PF         {New t} (* E -> (new TYPE) *)
-| ESP n=ID                {Adress n} (* E -> &id *)
-| TRUE                    {Booleen true}
-| FALSE                   {Booleen false}
-| e=ENTIER                {Entier e}
-| NUM e1=e                {Unaire(Numerateur,e1)}
-| DENOM e1=e              {Unaire(Denominateur,e1)}
-| PO e1=e PLUS e2=e PF    {Binaire (Plus,e1,e2)}
-| PO e1=e MULT e2=e PF    {Binaire (Mult,e1,e2)}
-| PO e1=e EQUAL e2=e PF   {Binaire (Equ,e1,e2)}
-| PO e1=e INF e2=e PF     {Binaire (Inf,e1,e2)}
-| PO exp=e PF             {exp}
+| CALL n=ID PO lp=e* PF         {AppelFonction (n,lp)}
+| CO e1=e SLASH e2=e CF         {Binaire(Fraction,e1,e2)}
+| af=a                          {Affectable af} (* E -> A *)
+| NULL                          {Null} (* E -> null *)
+| PO NEW t=typ PF               {New t} (* E -> (new TYPE) *)
+| ESP n=ID                      {Adress n} (* E -> &id *)
+| TRUE                          {Booleen true}
+| FALSE                         {Booleen false}
+| e=ENTIER                      {Entier e}
+| NUM e1=e                      {Unaire(Numerateur,e1)}
+| DENOM e1=e                    {Unaire(Denominateur,e1)}
+| PO e1=e PLUS e2=e PF          {Binaire (Plus,e1,e2)}
+| PO e1=e MULT e2=e PF          {Binaire (Mult,e1,e2)}
+| PO e1=e EQUAL e2=e PF         {Binaire (Equ,e1,e2)}
+| PO e1=e INF e2=e PF           {Binaire (Inf,e1,e2)}
+| PO e1=e PI e2=e DP e3=e PF    {Ternaire(e1,e2,e3)} (* E -> ( E ? E : E ) *)
+| PO exp=e PF                   {exp}

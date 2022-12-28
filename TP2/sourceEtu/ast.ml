@@ -45,6 +45,8 @@ type expression =
   | Unaire of unaire * expression
   (* Opération binaire représentée par l'opérateur, l'opérande gauche et l'opérande droite *)
   | Binaire of binaire * expression * expression
+  (* Conditionnelle sous la forme d'un opérateur ternaire *)
+  | Ternaire of expression * expression * expression
 
 (* Instructions de Rat *)
 type bloc = instruction list
@@ -102,6 +104,7 @@ struct
     | Entier of int
     | Unaire of AstSyntax.unaire * expression
     | Binaire of AstSyntax.binaire * expression * expression
+    | Ternaire of expression * expression * expression
 
   (* instructions existantes dans notre langage *)
   (* ~ instruction de l'AST syntaxique où les noms des identifiants ont été
@@ -158,6 +161,7 @@ type expression =
   | Entier of int
   | Unaire of unaire * expression
   | Binaire of binaire * expression * expression
+  | Ternaire of expression * expression * expression
 
 (* instructions existantes Rat *)
 (* = instruction de AstTds + informations associées aux identificateurs, mises à jour *)

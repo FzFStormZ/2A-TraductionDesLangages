@@ -62,6 +62,8 @@ rule token = parse
 | "*"          { MULT }
 | "<"          { INF }
 | "&"          { ESP } (* carac spe pour les pointeurs *)
+| "?"          { PI } (* point d'interrogation *)
+| ":"          { DP } (* deux point *)
 
 (* constantes entières *)
 | ("-")?['0'-'9']+ as i
