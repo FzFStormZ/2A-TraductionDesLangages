@@ -1,6 +1,7 @@
 test{
+  const a = 5;
   loop { 
-    print 0;
+    print a;
 
     break;
   }

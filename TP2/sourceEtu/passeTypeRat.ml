@@ -13,7 +13,13 @@ type t2 = Ast.AstType.programme
 (* Erreur si mauvaise utilisation des types *)
 let rec analyse_type_affectable a = 
   match a with
-  | AstTds.Ident iast -> (getType iast, AstType.Ident iast)
+  | AstTds.Ident iast -> 
+      begin
+        match info_ast_to_info iast with
+        | InfoVar (_,t,_,_) -> (t, AstType.Ident iast)
+        | InfoConst _ -> (Int, AstType.Ident iast)
+        | _ -> failwith "erreur interne"
+      end
   | AstTds.Dref da ->
       begin
         let ta, na = analyse_type_affectable da in
@@ -71,7 +77,7 @@ let rec analyse_type_expression exp =
         | InfoFun(_, typ, typList) -> 
             let (typListE, li) = List.split (List.map analyse_type_expression expList) in
             (* On compare les 2 listes de "typ" de la fonctions *)
-            if (typListE = typList) then 
+            if (Type.est_compatible_list typListE typList) then 
               (typ, AstType.AppelFonction(iast, li))
             else 
               raise (TypesParametresInattendus (typListE, typList))
@@ -165,6 +171,12 @@ let rec analyse_type_instruction i =
         | _ -> failwith "Cas impossible"
       end
   | AstTds.Empty -> AstType.Empty
+  | AstTds.BoucleInfinie (li) -> AstType.BoucleInfinie (analyse_type_bloc li)
+  | AstTds.BoucleInfinieNommee (ia, li) -> AstType.BoucleInfinieNommee (ia, analyse_type_bloc li)
+  | AstTds.Break -> AstType.Break
+  | AstTds.BreakNommee (ia) -> AstType.BreakNommee (ia)
+  | AstTds.Continue -> AstType.Continue 
+  | AstTds.ContinueNommee (ia) -> AstType.ContinueNommee (ia)
 
 
 (* analyse_tds_bloc : AstTds.bloc -> AstType.bloc *)

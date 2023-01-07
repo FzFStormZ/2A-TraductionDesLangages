@@ -209,9 +209,7 @@ let rec analyse_tds_instruction tds oia loia i =
       end
   | AstSyntax.BoucleInfinie (li) ->
       (* On analyse juste les instructions dans la boucle *)
-      let nli = analyse_tds_bloc tds oia None li in
-
-      AstTds.BoucleInfinie (nli)
+      AstTds.BoucleInfinie (analyse_tds_bloc tds oia None li)
   | AstSyntax.BreakNommee (n) -> 
       (* On analyse si ce break nommé est associé à une boucle nommée *)
       let nr = "loop "^n in

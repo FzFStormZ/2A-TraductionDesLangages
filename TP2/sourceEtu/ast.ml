@@ -196,6 +196,12 @@ type bloc = instruction list
   | TantQue of expression * bloc
   | Retour of expression * Tds.info_ast
   | Empty (* les nœuds ayant disparus: Const *)
+  | BoucleInfinie of bloc
+  | BoucleInfinieNommee of Tds.info_ast * bloc
+  | Break
+  | BreakNommee of Tds.info_ast
+  | Continue
+  | ContinueNommee of Tds.info_ast
 
 (* informations associées à l'identificateur (dont son nom), liste des paramètres, corps *)
 type fonction = Fonction of Tds.info_ast * Tds.info_ast list * bloc

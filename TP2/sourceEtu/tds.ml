@@ -56,6 +56,7 @@ let chercherLocalement tds nom =
 let getType info_ast =
   match info_ast_to_info info_ast with 
   | InfoVar(_, typ, _, _) -> typ
+  | InfoConst _ -> failwith "test const"
   | _ -> failwith "Cas impossible"
 
 

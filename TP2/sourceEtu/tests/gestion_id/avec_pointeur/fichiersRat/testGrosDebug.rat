@@ -7,5 +7,5 @@ test{
   
   int y = (* px);
 
-  int z = null;
+  int * z = null;
 }
