@@ -63,10 +63,22 @@ and instruction =
   | Conditionnelle of expression * bloc * bloc
   (* Conditionnelle avec le bloc else optionnel *)
   | ElseOptionnel of expression * bloc
-  (*Boucle TantQue représentée par la conditin d'arrêt de la boucle et le bloc d'instructions *)
+  (* Boucle TantQue représentée par la conditin d'arrêt de la boucle et le bloc d'instructions *)
   | TantQue of expression * bloc
-  (* return d'une fonction *)
+  (* Return d'une fonction *)
   | Retour of expression
+  (* Boucle "loop" à la Rust *)
+  | BoucleInfinie of bloc
+  (* Boucle nommée "loop" à la Rust *)
+  | BoucleInfinieNommee of string * bloc
+  (* Break d'une loop *)
+  | Break
+  (* Break nommé d'une loop *)
+  | BreakNommee of string
+  (* Continue d'une loop *)
+  | Continue
+  (* Continue nommé d'une loop *)
+  | ContinueNommee of string
 
 (* Structure des fonctions de Rat *)
 (* type de retour - nom - liste des paramètres (association type et nom) - corps de la fonction *)
@@ -120,6 +132,12 @@ struct
     | TantQue of expression * bloc
     | Retour of expression * Tds.info_ast  (* les informations sur la fonction à laquelle est associé le retour *)
     | Empty (* les nœuds ayant disparus: Const *)
+    | BoucleInfinie of bloc
+    | BoucleInfinieNommee of Tds.info_ast * bloc
+    | Break
+    | BreakNommee of Tds.info_ast
+    | Continue
+    | ContinueNommee of Tds.info_ast
 
 
   (* Structure des fonctions dans notre langage *)

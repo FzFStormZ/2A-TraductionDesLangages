@@ -32,7 +32,11 @@
         "return",  RETURN;
         (* mots-clés pour les pointeurs *)
         "new",     NEW;
-        "null",    NULL
+        "null",    NULL;
+        (* mots-clés pour les boucles "loop" à la rust *)
+        "loop",    LOOP;
+        "break",   BREAK;
+        "continue", CONTINUE;
       ];
     fun id ->
       match Hashtbl.find_opt kws id with

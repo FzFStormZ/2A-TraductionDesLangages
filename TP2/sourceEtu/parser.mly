@@ -43,6 +43,10 @@ open Ast.AstSyntax
 (* token pour la condi sous forme ternaire *)
 %token PI
 %token DP
+(* toekn pour les boucles "loop" à la rust *)
+%token LOOP
+%token BREAK
+%token CONTINUE
 
 (* Type de l'attribut synthétisé des non-terminaux *)
 %type <programme> prog
@@ -77,13 +81,19 @@ a :
 
 i :
 | t=typ n=ID EQUAL e1=e PV          {Declaration (t,n,e1)}
-| a1=a EQUAL e1=e PV                {Affectation (a1,e1)} (* I -> A = E*)
+| a1=a EQUAL e1=e PV                {Affectation (a1,e1)} (* I -> A = E *)
 | CONST n=ID EQUAL e=ENTIER PV      {Constante (n,e)}
 | PRINT e1=e PV                     {Affichage (e1)}
 | IF exp=e li1=bloc ELSE li2=bloc   {Conditionnelle (exp,li1,li2)}
 | IF exp=e li=bloc                  {ElseOptionnel(exp,li)} (* I -> if E BLOC *)
 | WHILE exp=e li=bloc               {TantQue (exp,li)}
 | RETURN exp=e PV                   {Retour (exp)}
+| n=ID DP LOOP li=bloc              {BoucleInfinieNommee(n,li)} (* I -> id : loop BLOC *)
+| LOOP li=bloc                      {BoucleInfinie(li)} (* I -> loop BLOC *)
+| BREAK n=ID PV                     {BreakNommee(n)} (* I -> break id; *)
+| BREAK PV                          {Break} (* I -> break ; *)
+| CONTINUE n=ID PV                  {ContinueNommee(n)} (* I -> continue id; *)
+| CONTINUE PV                       {Continue} (* I -> continue ; *)
 
 typ :
 | BOOL          {Bool}

@@ -1,0 +1,9 @@
+test{
+  loop { 
+    print 0;
+
+    break;
+  }
+
+  print 1;
+}

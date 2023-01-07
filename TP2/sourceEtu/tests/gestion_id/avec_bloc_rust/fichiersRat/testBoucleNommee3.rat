@@ -1,0 +1,7 @@
+test{
+  int first = 1;
+  first : loop { 
+    
+    print first; 
+  }
+}

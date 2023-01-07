@@ -1,0 +1,8 @@
+test{
+  first : loop { 
+    print 0;
+    break first;
+  }
+
+  print 1;
+}

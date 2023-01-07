@@ -32,6 +32,7 @@ let rec analyse_tds_affectable tds a ecriture =
               raise (MauvaiseUtilisationIdentifiant ident)
             else 
               AstTds.Ident iast
+          | InfoBoucle _ -> raise (MauvaiseUtilisationIdentifiant ident)
         end
     end
   | AstSyntax.Dref da ->
@@ -89,7 +90,7 @@ let rec analyse_tds_expression tds e =
 (* Vérifie la bonne utilisation des identifiants et transforme l'instruction
 en une instruction de type AstTds.instruction *)
 (* Erreur si mauvaise utilisation des identifiants *)
-let rec analyse_tds_instruction tds oia i =
+let rec analyse_tds_instruction tds oia loia i =
   match i with
   | AstSyntax.Declaration (t, n, e) ->
       begin
@@ -143,23 +144,23 @@ let rec analyse_tds_instruction tds oia i =
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc then *)
-      let tast = analyse_tds_bloc tds oia t in
+      let tast = analyse_tds_bloc tds oia loia t in
       (* Analyse du bloc else *)
-      let east = analyse_tds_bloc tds oia e in
+      let east = analyse_tds_bloc tds oia loia e in
       (* Renvoie la nouvelle structure de la conditionnelle *)
       AstTds.Conditionnelle (nc, tast, east)
   | AstSyntax.ElseOptionnel (c,t) ->
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc then *)
-      let tast = analyse_tds_bloc tds oia t in
+      let tast = analyse_tds_bloc tds oia loia t in
       (* Renvoie la nouvelle structure de la conditionnelle *)
       AstTds.ElseOptionnel (nc, tast)
   | AstSyntax.TantQue (c,b) ->
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc *)
-      let bast = analyse_tds_bloc tds oia b in
+      let bast = analyse_tds_bloc tds oia loia b in
       (* Renvoie la nouvelle structure de la boucle *)
       AstTds.TantQue (nc, bast)
   | AstSyntax.Retour (e) ->
@@ -174,7 +175,61 @@ let rec analyse_tds_instruction tds oia i =
         let ne = analyse_tds_expression tds e in
         AstTds.Retour (ne,ia)
       end
+  | AstSyntax.BoucleInfinieNommee (n,li) ->
+      (* Nom remplacé pour respecter la contrainte d'avoir *)
+      (* des variables et boucles de même nom *)
+      let nr = "loop "^n in      
+      begin
+        (* On vérifie si on est déjà dans une boucle nommée *)
+        match loia with
+        | None ->
+            let info = InfoBoucle nr in
+            let ia = info_to_info_ast info in
+            ajouter tds nr ia;
 
+            let nli = analyse_tds_bloc tds oia (Some ia) li in
+
+            AstTds.BoucleInfinieNommee (ia,nli)
+        | Some ia ->
+            (* On vérifie si les 2 boucles imbriquées n'ont pas le même identifiant *)
+            begin
+              match info_ast_to_info ia with
+              | InfoBoucle(ni) ->
+                  if (nr = ni) then raise (DoubleDeclarationBoucle n)
+                  else
+                    let info = InfoBoucle nr in
+                    let ia = info_to_info_ast info in
+                    ajouter tds nr ia;
+
+                    let nli = analyse_tds_bloc tds oia (Some ia) li in
+
+                    AstTds.BoucleInfinieNommee (ia,nli)
+              | _ -> failwith "erreur interne"
+            end
+      end
+  | AstSyntax.BoucleInfinie (li) ->
+      (* On analyse juste les instructions dans la boucle *)
+      let nli = analyse_tds_bloc tds oia None li in
+
+      AstTds.BoucleInfinie (nli)
+  | AstSyntax.BreakNommee (n) -> 
+      (* On analyse si ce break nommé est associé à une boucle nommée *)
+      let nr = "loop "^n in
+      begin  
+        match chercherGlobalement tds nr with
+        | None -> raise (BoucleNommeeNonDeclare n)
+        | Some ia -> AstTds.BreakNommee(ia)
+      end
+  | AstSyntax.Break -> AstTds.Break
+  | AstSyntax.ContinueNommee (n) ->
+      (* On analyse si ce continue nommé est associé à une boucle nommée *)
+      let nr = "loop "^n in
+      begin  
+        match chercherGlobalement tds nr with
+        | None -> raise (BoucleNommeeNonDeclare n)
+        | Some ia -> AstTds.ContinueNommee(ia)
+      end
+  | AstSyntax.Continue -> AstTds.Continue
 
 (* analyse_tds_bloc : tds -> info_ast option -> AstSyntax.bloc -> AstTds.bloc *)
 (* Paramètre tds : la table des symboles courante *)
@@ -183,13 +238,13 @@ let rec analyse_tds_instruction tds oia i =
 (* Paramètre li : liste d'instructions à analyser *)
 (* Vérifie la bonne utilisation des identifiants et transforme le bloc en un bloc de type AstTds.bloc *)
 (* Erreur si mauvaise utilisation des identifiants *)
-and analyse_tds_bloc tds oia li =
+and analyse_tds_bloc tds oia loia li =
   (* Entrée dans un nouveau bloc, donc création d'une nouvelle tds locale
   pointant sur la table du bloc parent *)
   let tdsbloc = creerTDSFille tds in
   (* Analyse des instructions du bloc avec la tds du nouveau bloc.
      Cette tds est modifiée par effet de bord *)
-   let nli = List.map (analyse_tds_instruction tdsbloc oia) li in
+   let nli = List.map (analyse_tds_instruction tdsbloc oia loia) li in
    (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
    nli
 
@@ -242,7 +297,7 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li)) =
   let nlp = List.map (fun (t,n) -> ajouter_pointeur tds_fun n t) lp in
 
   (* Analyser les identifiants dans le bloc *)
-  let lie = analyse_tds_bloc tds_fun (Some ia) li in
+  let lie = analyse_tds_bloc tds_fun (Some ia) None li in
   
   (* On renvoie la fonction de type AstTds.Fonction *)
   AstTds.Fonction(t, ia, nlp, lie)
@@ -256,5 +311,5 @@ en un programme de type AstTds.programme *)
 let analyser (AstSyntax.Programme (fonctions,prog)) =
   let tds = creerTDSMere () in
   let nf = List.map (analyse_tds_fonction tds) fonctions in
-  let nb = analyse_tds_bloc tds None prog in
+  let nb = analyse_tds_bloc tds None None prog in
   AstTds.Programme (nf,nb)

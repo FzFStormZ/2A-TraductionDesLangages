@@ -1,0 +1,10 @@
+test{
+  
+  first : loop { 
+    print 0;
+
+    first : loop {
+      print 1;
+    }
+  }
+}

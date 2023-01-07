@@ -95,6 +95,12 @@ struct
     | TantQue (c,b) -> "TantQue  : TQ "^(string_of_expression c)^"\n"^
                                   "FAIRE \n"^((List.fold_right (fun i tq -> (string_of_instruction i)^tq) b ""))^"\n"
     | Retour (e) -> "Retour  : RETURN "^(string_of_expression e)^"\n"
+    | BoucleInfinieNommee (n,li) -> "Loop Infinie : "^n^" "^((List.fold_right (fun i tq -> (string_of_instruction i)^tq) li ""))^"\n"
+    | BoucleInfinie (li) -> "Loop Infinie : "^((List.fold_right (fun i tq -> (string_of_instruction i)^tq) li ""))^"\n"
+    | BreakNommee (n) -> "Break Loop : "^n^"\n"
+    | Break -> "Break Loop : \n"
+    | ContinueNommee (n) -> "Continue Loop :"^n^"\n"
+    | Continue -> "Continue Loop : \n"
 
   (* Conversion des fonctions *)
   let string_of_fonction (Fonction(t,n,lp,li)) = (string_of_type t)^" "^n^" ("^((List.fold_right (fun (t,n) tq -> (string_of_type t)^" "^n^" "^tq) lp ""))^") = \n"^

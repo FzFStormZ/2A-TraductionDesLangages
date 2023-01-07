@@ -1,0 +1,12 @@
+test{
+  first : loop { 
+    second : loop {
+      print 0;
+      break first;
+    }
+
+    print 1;
+  }
+
+  print 2;
+}
