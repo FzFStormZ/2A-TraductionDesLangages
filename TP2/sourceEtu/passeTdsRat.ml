@@ -8,7 +8,6 @@ type t1 = Ast.AstSyntax.programme
 type t2 = Ast.AstTds.programme
 
 
-
 (* analyse_tds_affectable : tds -> AstSyntax.affectable -> AstTds.affectable *)
 (* Paramètre tds      : la table des symboles courante *)
 (* Paramètre a        : l'affectable à analyser *)
@@ -39,7 +38,7 @@ let rec analyse_tds_affectable tds a ecriture =
       let nda = analyse_tds_affectable tds da ecriture in
       AstTds.Dref nda
 
-
+(* TODO : Rajouter des commentaires dans le code*)
 (* analyse_tds_expression : tds -> AstSyntax.expression -> AstTds.expression *)
 (* Paramètre tds  : la table des symboles courante *)
 (* Paramètre e    : l'expression à analyser *)
@@ -229,6 +228,7 @@ let rec analyse_tds_instruction tds oia loia i =
       end
   | AstSyntax.Continue -> AstTds.Continue
 
+
 (* analyse_tds_bloc : tds -> info_ast option -> AstSyntax.bloc -> AstTds.bloc *)
 (* Paramètre tds : la table des symboles courante *)
 (* Paramètre oia : None si le bloc li est dans le programme principal,
@@ -247,7 +247,7 @@ and analyse_tds_bloc tds oia loia li =
    nli
 
 
-(* *)
+(* TODO *)
 let ajouter_pointeur tds n t =
   match chercherLocalement tds n with
   | None ->
