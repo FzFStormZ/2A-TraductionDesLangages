@@ -1,0 +1,18 @@
+main {
+    int h = 0;
+    heure : loop {
+        int m = 0;
+        loop {
+            if (m = 7) {
+                break;
+            }
+            if (h = 4) {
+                break heure;
+            }
+            print h;
+            print m;
+            m = (m+1);
+        }
+        h = (h+1);
+    }
+}

@@ -1,5 +1,5 @@
 (library
- (name avec_bloc_rust_id)
+ (name combinaisons_tam)
  (libraries rat)
  (inline_tests)
  (preprocess

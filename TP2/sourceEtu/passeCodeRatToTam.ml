@@ -110,15 +110,15 @@ let rec analyse_code_expression exp =
 (* Paramètre li         : liste d'instructions à analyser *)
 (* Paramètre tailleBloc : taille du bloc à analyser *)
 (* Analyser le code RAT d'un bloc et le transforme en code TAM *)
-let rec analyse_code_bloc (li, tailleBloc) =
+let rec analyse_code_bloc (li, tailleBloc) detiq fetiq =
   Tam.push tailleBloc 
-  ^ List.fold_left (fun res t -> res ^ analyse_code_instruction t) "" li
+  ^ List.fold_left (fun res t -> res ^ analyse_code_instruction t detiq fetiq) "" li
   ^ Tam.pop 0 tailleBloc
 
 (* analyse_code_instruction : AstPlacement.instruction -> string *)
 (* Paramètre i    : l'instruction à analyser *)
 (* Analyser le code RAT d'une instruction et le transforme en code TAM *)
-and analyse_code_instruction i = 
+and analyse_code_instruction i detiq fetiq = 
   match i with
   | AstPlacement.Declaration(iast, exp) ->
       begin
@@ -148,7 +148,7 @@ and analyse_code_instruction i =
       Tam.label lDebut 
       ^ (analyse_code_expression exp) (* condition d'arret *)
       ^ Tam.jumpif 0 lFin
-      ^ (analyse_code_bloc bloc) (* le bloc de la boucle *)
+      ^ (analyse_code_bloc bloc detiq fetiq) (* le bloc de la boucle *)
       ^ Tam.jump lDebut (* on jump au label de la boucle *)
       ^ Tam.label lFin
     | AstPlacement.Conditionnelle(exp, bt, be) ->
@@ -159,11 +159,11 @@ and analyse_code_instruction i =
       (analyse_code_expression exp)
       ^ Tam.jumpif 0 lDebutElse
       (* bloc If *)
-      ^ (analyse_code_bloc bt)
+      ^ (analyse_code_bloc bt detiq fetiq)
       ^ Tam.jump lFin
       (* bloc Else *)
       ^ Tam.label lDebutElse
-      ^ (analyse_code_bloc be)
+      ^ (analyse_code_bloc be detiq fetiq)
       (* Fin *)
       ^ Tam.label lFin
   | AstPlacement.ElseOptionnel(exp, bt) ->
@@ -173,7 +173,7 @@ and analyse_code_instruction i =
       (analyse_code_expression exp)
       ^ Tam.jumpif 0 lFin
       (* bloc If *)
-      ^ (analyse_code_bloc bt)
+      ^ (analyse_code_bloc bt detiq fetiq)
       ^ Tam.jump lFin
       (* Fin *)
       ^ Tam.label lFin
@@ -181,6 +181,39 @@ and analyse_code_instruction i =
       (analyse_code_expression exp)
       ^ Tam.return tailleRet tailleParam
   | AstPlacement.Empty -> ""
+  | AstPlacement.BoucleInfinie (li) ->
+      let lDebut = Code.getEtiquette() in
+      let lFin = Code.getEtiquette() in
+
+      Tam.label lDebut 
+      (* Je donne l'etiquette au bloc pour le break et continue *)
+      ^ (analyse_code_bloc li lDebut lFin)
+      ^ Tam.jump lDebut
+      ^ Tam.label lFin
+  | AstPlacement.BoucleInfinieNommee (ia, li) ->
+      begin
+        match info_ast_to_info ia with
+        | InfoBoucle n -> 
+            Tam.label ("debut@"^n)
+            ^ (analyse_code_bloc li detiq fetiq)
+            ^ Tam.jump ("debut@"^n)
+            ^ Tam.label ("fin@"^n)
+        | _ -> failwith "erreur interne"
+      end
+  | AstPlacement.Break -> Tam.jump fetiq
+  | AstPlacement.BreakNommee (ia) ->
+      begin
+        match info_ast_to_info ia with
+        | InfoBoucle n -> Tam.jump ("fin@"^n)
+        | _ -> failwith "erreur interne"
+      end 
+  | AstPlacement.Continue -> Tam.jump detiq
+  | AstPlacement.ContinueNommee (ia) ->
+      begin
+        match info_ast_to_info ia with
+        | InfoBoucle n -> Tam.jump ("debut@"^n)
+        | _ -> failwith "erreur interne"
+      end 
 
 (* analyser_code_fonction : AstPlacement.fonction -> string *)
 (* Paramètre f : la fonction à analyser *)
@@ -190,7 +223,7 @@ let analyser_code_fonction (AstPlacement.Fonction (iast, _, b)) =
   | InfoFun(n, _, _) ->
       Tam.label n
       (* analyse le bloc de la fonction *)
-      ^ (analyse_code_bloc b)  (* dépiler variables locales -> est dejà fait dans analyse_code_bloc *)
+      ^ (analyse_code_bloc b "" "")  (* dépiler variables locales -> est dejà fait dans analyse_code_bloc *)
       ^ Tam.halt (* force l'arret si pas de RETURN *)
   | _ -> failwith "Cas impossible"
 
@@ -201,5 +234,5 @@ let analyser(AstPlacement.Programme(lf,b)) =
   Code.getEntete() (* contient déjà un JUMP main *)
   ^ List.fold_left (fun res f -> res ^ analyser_code_fonction f) "" lf
   ^ Tam.label "main"
-  ^ analyse_code_bloc b 
+  ^ analyse_code_bloc b "" ""
   ^ Tam.halt

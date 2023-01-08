@@ -178,7 +178,7 @@ let rec analyse_tds_instruction tds oia loia i =
   | AstSyntax.BoucleInfinieNommee (n,li) ->
       (* Nom remplacé pour respecter la contrainte d'avoir *)
       (* des variables et boucles de même nom *)
-      let nr = "loop "^n in      
+      let nr = "loop@"^n in      
       begin
         (* On vérifie si on est déjà dans une boucle nommée *)
         match loia with
@@ -212,7 +212,7 @@ let rec analyse_tds_instruction tds oia loia i =
       AstTds.BoucleInfinie (analyse_tds_bloc tds oia None li)
   | AstSyntax.BreakNommee (n) -> 
       (* On analyse si ce break nommé est associé à une boucle nommée *)
-      let nr = "loop "^n in
+      let nr = "loop@"^n in
       begin  
         match chercherGlobalement tds nr with
         | None -> raise (BoucleNommeeNonDeclare n)
@@ -221,7 +221,7 @@ let rec analyse_tds_instruction tds oia loia i =
   | AstSyntax.Break -> AstTds.Break
   | AstSyntax.ContinueNommee (n) ->
       (* On analyse si ce continue nommé est associé à une boucle nommée *)
-      let nr = "loop "^n in
+      let nr = "loop@"^n in
       begin  
         match chercherGlobalement tds nr with
         | None -> raise (BoucleNommeeNonDeclare n)
