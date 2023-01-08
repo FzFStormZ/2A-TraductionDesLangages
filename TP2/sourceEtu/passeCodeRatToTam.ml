@@ -115,6 +115,7 @@ let rec analyse_code_bloc (li, tailleBloc) detiq fetiq =
   ^ List.fold_left (fun res t -> res ^ analyse_code_instruction t detiq fetiq) "" li
   ^ Tam.pop 0 tailleBloc
 
+
 (* analyse_code_instruction : AstPlacement.instruction -> string *)
 (* Paramètre i    : l'instruction à analyser *)
 (* Analyser le code RAT d'une instruction et le transforme en code TAM *)
@@ -151,21 +152,21 @@ and analyse_code_instruction i detiq fetiq =
       ^ (analyse_code_bloc bloc detiq fetiq) (* le bloc de la boucle *)
       ^ Tam.jump lDebut (* on jump au label de la boucle *)
       ^ Tam.label lFin
-    | AstPlacement.Conditionnelle(exp, bt, be) ->
-      let lDebutElse = Code.getEtiquette() in
-      let lFin = Code.getEtiquette() in
+  | AstPlacement.Conditionnelle(exp, bt, be) ->
+    let lDebutElse = Code.getEtiquette() in
+    let lFin = Code.getEtiquette() in
 
-      (* Condition du If *)
-      (analyse_code_expression exp)
-      ^ Tam.jumpif 0 lDebutElse
-      (* bloc If *)
-      ^ (analyse_code_bloc bt detiq fetiq)
-      ^ Tam.jump lFin
-      (* bloc Else *)
-      ^ Tam.label lDebutElse
-      ^ (analyse_code_bloc be detiq fetiq)
-      (* Fin *)
-      ^ Tam.label lFin
+    (* Condition du If *)
+    (analyse_code_expression exp)
+    ^ Tam.jumpif 0 lDebutElse
+    (* bloc If *)
+    ^ (analyse_code_bloc bt detiq fetiq)
+    ^ Tam.jump lFin
+    (* bloc Else *)
+    ^ Tam.label lDebutElse
+    ^ (analyse_code_bloc be detiq fetiq)
+    (* Fin *)
+    ^ Tam.label lFin
   | AstPlacement.ElseOptionnel(exp, bt) ->
       let lFin = Code.getEtiquette() in
 
@@ -215,6 +216,7 @@ and analyse_code_instruction i detiq fetiq =
         | _ -> failwith "erreur interne"
       end 
 
+
 (* analyser_code_fonction : AstPlacement.fonction -> string *)
 (* Paramètre f : la fonction à analyser *)
 (* Analyser le code RAT d'une fonction et le transforme en code TAM *)
@@ -226,6 +228,7 @@ let analyser_code_fonction (AstPlacement.Fonction (iast, _, b)) =
       ^ (analyse_code_bloc b "" "")  (* dépiler variables locales -> est dejà fait dans analyse_code_bloc *)
       ^ Tam.halt (* force l'arret si pas de RETURN *)
   | _ -> failwith "Cas impossible"
+
 
 (* analyser : AstPlacement.programme -> string *)
 (* Paramètre p : le programme à analyser *)

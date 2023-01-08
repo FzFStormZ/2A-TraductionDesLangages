@@ -18,9 +18,7 @@ module PasseTdsNop : Passe  with type t1 = Ast.AstSyntax.programme and type t2 =
 struct
   type t1 = Ast.AstSyntax.programme
   type t2 = Ast.AstTds.programme
-
   let analyser _ =  Ast.AstTds.Programme([],[])
-
 end
 
 (* Passe AstTds.programme -> AstType.programme *)
@@ -30,9 +28,7 @@ module PasseTypeNop : Passe  with type t1 = Ast.AstTds.programme and type t2 = A
 struct
   type t1 = Ast.AstTds.programme
   type t2 =  Ast.AstType.programme
-
   let analyser _ =  Ast.AstType.Programme([],[])
-
 end
 
 (* Passe AstType.programme -> unit *)
@@ -42,9 +38,7 @@ module PassePlacementNop : Passe  with type t1 =  Ast.AstType.programme and type
 struct
   type t1 = Ast.AstType.programme
   type t2 = Ast.AstPlacement.programme
-
   let analyser _ = Ast.AstPlacement.Programme([],([],0))
-
 end
 
 (* Passe AstPlacement.programme -> string *)
@@ -54,9 +48,7 @@ module PasseCodeNop : Passe  with type t1 = Ast.AstPlacement.programme and type 
 struct
   type t1 = Ast.AstPlacement.programme
   type t2 = string
-
   let analyser _ = ""
-
 end
 
 (* Passe AstPlacement.programme -> string *)
@@ -65,7 +57,6 @@ end
 module VerifPlacement =
 struct
   open Tds
-
 
   (* Renvoie l'adresse d'une variable dans le cas d'une déclaration *)
   let rec analyser_instruction i = 
@@ -80,11 +71,11 @@ struct
     | Ast.AstPlacement.TantQue (_,(b,_)) -> (List.flatten (List.map (analyser_instruction) b))
     | _ -> [] 
 
-
-let analyser_param info =
-  match Tds.info_ast_to_info info with
-  | InfoVar (n,_,d,r) -> [(n,(d,r))]
-  | _ -> []
+  (* TODO *)
+  let analyser_param info =
+    match Tds.info_ast_to_info info with
+    | InfoVar (n,_,d,r) -> [(n,(d,r))]
+    | _ -> []
 
   (* Renvoie la suite des adresses des variables déclarées dans la fonction *)
   (* Ainsi qu'une adresse d'identifiant si le retour est un identifiant *)
@@ -98,5 +89,4 @@ let analyser_param info =
   (* Renvoie la suite des adresses des variables déclarées dans les fonctions et dans le programme principal *)
   let analyser (Ast.AstPlacement.Programme (fonctions, (prog,_))) =
     ("main", List.flatten (List.map (analyser_instruction) prog))::(List.flatten (List.map (analyser_fonction) fonctions))
-
 end
