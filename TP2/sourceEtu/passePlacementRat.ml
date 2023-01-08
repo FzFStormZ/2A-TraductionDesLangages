@@ -11,10 +11,12 @@ type t2 = Ast.AstPlacement.programme
 (* Aucune modification durant la passe de placement en mémoire *)
 let analyse_placement_affectable a = a
 
+
 (* analyse_placement_expression : AstType.expression -> AstType.expression *)
 (* Paramètre exp : l'expression à analyser *)
 (* Aucune modification durant la passe de placement en mémoire *)
 let analyse_placement_expression exp = exp
+
 
 (* analyse_placement_instruction : AstTds.instruction -> AstType.instruction *)
 (* Paramètre i    : l'instruction à analyser *)
@@ -62,6 +64,7 @@ let rec analyse_placement_instruction i reg depl =
   | AstType.Continue -> (AstPlacement.Continue, 0)
   | AstType.ContinueNommee (ia) -> (AstPlacement.ContinueNommee(ia), 0)
 
+
 (* analyse_placement_bloc : AstType.bloc -> AstPlacement.bloc *)
 (* Paramètre li   : liste d'instructions à analyser *)
 (* Paramètre reg  : registre *)
@@ -75,6 +78,7 @@ and analyse_placement_bloc li reg depl =
     let (ni, taille_i) = analyse_placement_instruction i reg depl in
     let (nq, taille_q) = analyse_placement_bloc q reg (depl + taille_i) in
     (ni::nq, taille_i + taille_q)
+
 
 (* analyse_placement_fonction : AstType.fonction -> AstPlacement.fonction *)
 (* Paramètre f : la fonction à analyser *)
@@ -98,8 +102,8 @@ let analyse_placement_fonction (AstType.Fonction (iast, lp, bloc)) =
   placement_parametre (List.rev lp) 0;
   (* bloc d'instructions de la fonction *)
   let nb = analyse_placement_bloc bloc "LB" 3 in
-
   AstPlacement.Fonction(iast, lp, nb)
+
 
 (* analyser : AstType.programme -> AstPlacement.programme *)
 (* Paramètre p : le programme à analyser *)
@@ -109,3 +113,4 @@ let analyser (AstType.Programme (lf,b)) =
   let nlf = List.map analyse_placement_fonction lf in
   let nb = analyse_placement_bloc b "SB" 0 in
   AstPlacement.Programme (nlf,nb)
+  
