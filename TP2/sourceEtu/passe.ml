@@ -71,7 +71,6 @@ struct
     | Ast.AstPlacement.TantQue (_,(b,_)) -> (List.flatten (List.map (analyser_instruction) b))
     | _ -> [] 
 
-  (* TODO *)
   let analyser_param info =
     match Tds.info_ast_to_info info with
     | InfoVar (n,_,d,r) -> [(n,(d,r))]

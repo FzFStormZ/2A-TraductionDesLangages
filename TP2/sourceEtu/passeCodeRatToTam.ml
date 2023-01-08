@@ -78,7 +78,7 @@ let rec analyse_code_expression exp =
   | AstType.Affectable a ->
       (analyse_code_affectable a false) (* affectable en tant que expression est en lecture *)
   | AstType.Null -> 
-      Tam.loadl_int 0 (* idk ??*)
+      Tam.loadl_int 0
   | AstType.New t ->
       Tam.loadl_int (getTaille t)
       ^ Tam.subr "MAlloc"
@@ -175,7 +175,6 @@ and analyse_code_instruction i detiq fetiq =
       ^ Tam.jumpif 0 lFin
       (* bloc If *)
       ^ (analyse_code_bloc bt detiq fetiq)
-      ^ Tam.jump lFin
       (* Fin *)
       ^ Tam.label lFin
   | AstPlacement.Retour(exp, tailleRet, tailleParam) ->
