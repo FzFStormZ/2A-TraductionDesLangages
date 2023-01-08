@@ -226,17 +226,23 @@ type expression = AstType.expression
 
 (* instructions existantes dans notre langage *)
 type bloc = instruction list * int (* taille du bloc *)
- and instruction =
- | Declaration of Tds.info_ast * expression
- | Affectation of affectable * expression
- | AffichageInt of expression
- | AffichageRat of expression
- | AffichageBool of expression
- | Conditionnelle of expression * bloc * bloc
- | ElseOptionnel of expression * bloc
- | TantQue of expression * bloc
- | Retour of expression * int * int (* taille du retour et taille des paramètres *)
- | Empty (* les nœuds ayant disparus: Const *)
+  and instruction =
+  | Declaration of Tds.info_ast * expression
+  | Affectation of affectable * expression
+  | AffichageInt of expression
+  | AffichageRat of expression
+  | AffichageBool of expression
+  | Conditionnelle of expression * bloc * bloc
+  | ElseOptionnel of expression * bloc
+  | TantQue of expression * bloc
+  | Retour of expression * int * int (* taille du retour et taille des paramètres *)
+  | Empty (* les nœuds ayant disparus: Const *)
+  | BoucleInfinie of bloc
+  | BoucleInfinieNommee of Tds.info_ast * bloc
+  | Break
+  | BreakNommee of Tds.info_ast
+  | Continue
+  | ContinueNommee of Tds.info_ast
 
 (* informations associées à l'identificateur (dont son nom), liste de paramètres, corps, expression de retour *)
 (* Plus besoin de la liste des paramètres mais on la garde pour les tests du placements mémoire *)
