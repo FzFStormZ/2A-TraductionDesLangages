@@ -28,7 +28,7 @@ let rec analyse_code_affectable a ecriture =
         s ^ Tam.storei (getTaille ta)
       else
         s ^ Tam.loadi (getTaille ta)
-      
+
 
 (* analyse_code_expression : AstPlacement.expression -> string *)
 (* Paramètre exp : l'expression à analyser *)
