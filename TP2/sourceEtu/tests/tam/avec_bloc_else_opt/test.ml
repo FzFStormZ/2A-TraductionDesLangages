@@ -34,3 +34,8 @@ let pathFichiersRat = "../../../../../tests/tam/avec_bloc_else_opt/fichiersRat/"
 let%expect_test "testGrosDebugCorrect" =
   runtam (pathFichiersRat^"testGrosDebugCorrect.rat");
   [%expect{| 6 |}]
+
+(* Probleme avec ce test !!! *)
+(* let%expect_test "testExemple" =
+  runtam (pathFichiersRat^"testExemple.rat");
+  [%expect{| 0246810 |}] *)

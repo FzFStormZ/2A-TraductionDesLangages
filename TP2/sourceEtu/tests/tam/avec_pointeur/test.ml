@@ -41,4 +41,4 @@ let%expect_test "testAdress" =
 
   let%expect_test "testAffect2" =
   runtam (pathFichiersRat^"testAffect2.rat");
-  [%expect{| 42 |}]
+  [%expect{| 423 |}]

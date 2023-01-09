@@ -1,11 +1,12 @@
 test{
   int * px = (new int);
   (* px) = 42;
+  print (*px);
 
-  int y = 3;
-  int * py = &y;
+  int x = 3;
+  px = &x;
   
-  (* py) = (* px);
+  int y = (* px);
 
-  print (* py);
+  print y;
 }

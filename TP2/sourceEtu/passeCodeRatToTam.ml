@@ -125,8 +125,7 @@ and analyse_code_instruction i detiq fetiq =
       begin
         match info_ast_to_info iast with
           | InfoVar(_, t, dep, reg) ->
-            Tam.push (getTaille t)
-            ^ analyse_code_expression exp
+            analyse_code_expression exp
             ^ Tam.store (getTaille t) dep reg
           | _ -> failwith "Erreur interne"
       end
