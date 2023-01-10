@@ -87,8 +87,8 @@ let rec analyse_type_expression exp =
       let (t, na) = analyse_type_affectable a in
       (t, AstType.Affectable na)
   | AstTds.Null -> (Pointeur Type.Undefined, AstType.Null)
-  | AstTds.New t -> (Pointeur t, AstType.New t) (* on créée un pointeur de type t *)
-  | AstTds.Adress iast -> (Pointeur (getType iast), AstType.Adress iast) (* on renvoie l'adresse de la variable de type t *)
+  | AstTds.New t -> (Pointeur t, AstType.New t) (* On créée un pointeur de type t *)
+  | AstTds.Adress iast -> (Pointeur (getType iast), AstType.Adress iast) (* On renvoie l'adresse de la variable de type t *)
   | AstTds.Ternaire (c, expVrai, expFaux) ->
       let (t, nc) = analyse_type_expression c in
       (* On vérifie d'abord que la condition soit de type Bool obligatoirement (utilisation de Binaire) *)
@@ -103,7 +103,7 @@ let rec analyse_type_expression exp =
       else
         raise (TypeInattendu(t, Type.Bool))
 
-(* TODO rajouter des commentaires*)
+
 (* analyse_tds_instruction : AstTds.instruction -> AstType.instruction *)
 (* Paramètre i : l'instruction à analyser *)
 (* Vérifie la bonne utilisation des types et transforme l'instruction
@@ -135,7 +135,7 @@ let rec analyse_type_instruction i =
         | Type.Int -> AstType.AffichageInt ne
         | Type.Bool -> AstType.AffichageBool ne
         | Type.Rat -> AstType.AffichageRat ne
-        | t -> raise (TypeInattendu (te, t)) (*TODO ?? raise erreur interne*)
+        | t -> raise (TypeInattendu (te, t))
       end
   | AstTds.Conditionnelle (cond, bt, be) ->
       let (te, ne) = analyse_type_expression cond in
@@ -145,7 +145,7 @@ let rec analyse_type_instruction i =
         AstType.Conditionnelle (ne, nbt, nbe)
       else
         raise (TypeInattendu (te, Type.Bool))
-  | AstTds.ElseOptionnel (cond, bt) ->
+  | AstTds.ElseOptionnel (cond, bt) -> (* Seul différence : un bloc en moins à analyser *)
       let (te, ne) = analyse_type_expression cond in
       if (te = Type.Bool) then
         let nbt = analyse_type_bloc bt in

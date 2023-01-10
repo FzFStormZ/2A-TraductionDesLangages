@@ -5,8 +5,8 @@ open Ast.AstSyntax
 exception DoubleDeclaration of string 
 exception IdentifiantNonDeclare of string 
 exception MauvaiseUtilisationIdentifiant of string
-exception DoubleDeclarationBoucle of string
-exception BoucleNommeeNonDeclare of string
+exception DoubleDeclarationBoucle of string (* on ne l'accepte pas comparé à Rust qui lève seulement un warning *)
+exception BoucleNommeeNonDeclare of string (* dans le cas où l'indentifiant d'un break ou continue n'appartient à aucune boucle *)
 
 (* Exceptions pour le typage *)
 (* Le premier type est le type réel, le second est le type attendu *)

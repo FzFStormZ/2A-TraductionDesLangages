@@ -52,7 +52,7 @@ let chercherLocalement tds nom =
   | Courante (_,c) ->  find_opt c nom 
 
 
-(* TODO *)
+(* Obtenir le type d'une info_ast *)
 let getType info_ast =
   match info_ast_to_info info_ast with 
   | InfoVar(_, typ, _, _) -> typ
@@ -181,7 +181,6 @@ let rec chercherGlobalement tds nom =
     | None -> chercherGlobalement m nom 
 
 (* TESTS *)
-
 let%test _ = chercherGlobalement (creerTDSMere()) "x" = None
 let%test _ = 
   let tds = creerTDSMere() in

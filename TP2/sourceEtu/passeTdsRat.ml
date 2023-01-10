@@ -27,7 +27,7 @@ let rec analyse_tds_affectable tds a ecriture =
           | InfoVar _ -> AstTds.Ident iast
           | InfoFun _ -> raise (MauvaiseUtilisationIdentifiant ident)
           | InfoConst _ -> 
-            if ecriture then (* on ne peut pas écrire dans une constante *)
+            if ecriture then (* On ne peut pas écrire dans une constante *)
               raise (MauvaiseUtilisationIdentifiant ident)
             else 
               AstTds.Ident iast
@@ -38,7 +38,7 @@ let rec analyse_tds_affectable tds a ecriture =
       let nda = analyse_tds_affectable tds da ecriture in
       AstTds.Dref nda
 
-(* TODO : Rajouter des commentaires dans le code*)
+
 (* analyse_tds_expression : tds -> AstSyntax.expression -> AstTds.expression *)
 (* Paramètre tds  : la table des symboles courante *)
 (* Paramètre e    : l'expression à analyser *)
@@ -59,22 +59,23 @@ let rec analyse_tds_expression tds e =
           begin
             match info_ast_to_info a with
             | InfoFun _ ->
-              AstTds.AppelFonction (a, List.map (fun expr -> analyse_tds_expression tds expr) lp)
+                AstTds.AppelFonction (a, List.map (fun expr -> analyse_tds_expression tds expr) lp)
             | _ -> raise (MauvaiseUtilisationIdentifiant n)
           end
       end
-  | AstSyntax.Affectable a -> AstTds.Affectable (analyse_tds_affectable tds a false)
+  | AstSyntax.Affectable a -> (* Comme c'est dans le cas d'une expression, on n'est pas en mode écriture *)
+      AstTds.Affectable (analyse_tds_affectable tds a false)
   | AstSyntax.Adress ident ->
-      begin
-        match chercherGlobalement tds ident with
-        | None -> raise (IdentifiantNonDeclare ident)
-        | Some iast -> 
-          begin
-            match info_ast_to_info iast with
-            | InfoVar _ -> AstTds.Adress iast
-            | _ -> raise (MauvaiseUtilisationIdentifiant ident)
-          end
-      end
+    begin
+      match chercherGlobalement tds ident with
+      | None -> raise (IdentifiantNonDeclare ident)
+      | Some iast -> 
+        begin
+          match info_ast_to_info iast with
+          | InfoVar _ -> AstTds.Adress iast
+          | _ -> raise (MauvaiseUtilisationIdentifiant ident)
+        end
+    end
   | AstSyntax.Null -> AstTds.Null
   | AstSyntax.New t -> AstTds.New t
   | AstSyntax.Ternaire (c, expVrai, expFaux) -> 
@@ -82,57 +83,59 @@ let rec analyse_tds_expression tds e =
 
 
 (* analyse_tds_instruction : tds -> info_ast option -> AstSyntax.instruction -> AstTds.instruction *)
-(* Paramètre tds : la table des symboles courante *)
-(* Paramètre oia : None si l'instruction i est dans le bloc principal,
-                   Some ia où ia est l'information associée à la fonction dans laquelle est l'instruction i sinon *)
-(* Paramètre i : l'instruction à analyser *)
+(* Paramètre tds  : la table des symboles courante *)
+(* Paramètre oia  : None si l'instruction i est dans le bloc principal,
+                    Some ia où ia est l'information associée à la fonction dans laquelle est l'instruction i sinon *)
+(* Paramètre loia : None si l'instruction i n'est pas dans une boucle,
+                    Some ia où ia est l'information associée à la boucle dans laquelle est l'instruction i sinon *)
+(* Paramètre i    : l'instruction à analyser *)
 (* Vérifie la bonne utilisation des identifiants et transforme l'instruction
 en une instruction de type AstTds.instruction *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let rec analyse_tds_instruction tds oia loia i =
   match i with
   | AstSyntax.Declaration (t, n, e) ->
-      begin
-        match chercherLocalement tds n with
-        | None ->
-            (* L'identifiant n'est pas trouvé dans la tds locale,
-            il n'a donc pas été déclaré dans le bloc courant *)
-            (* Vérification de la bonne utilisation des identifiants dans l'expression *)
-            (* et obtention de l'expression transformée *)
-            let ne = analyse_tds_expression tds e in
-            (* Création de l'information associée à l'identfiant *)
-            let info = InfoVar (n,Undefined, 0, "") in
-            (* Création du pointeur sur l'information *)
-            let ia = info_to_info_ast info in
-            (* Ajout de l'information (pointeur) dans la tds *)
-            ajouter tds n ia;
-            (* Renvoie de la nouvelle déclaration où le nom a été remplacé par l'information
-            et l'expression remplacée par l'expression issue de l'analyse *)
-            AstTds.Declaration (t, ia, ne)
-        | Some _ ->
-            (* L'identifiant est trouvé dans la tds locale,
-            il a donc déjà été déclaré dans le bloc courant *)
-            raise (DoubleDeclaration n)
-      end
+    begin
+      match chercherLocalement tds n with
+      | None ->
+          (* L'identifiant n'est pas trouvé dans la tds locale,
+          il n'a donc pas été déclaré dans le bloc courant *)
+          (* Vérification de la bonne utilisation des identifiants dans l'expression *)
+          (* et obtention de l'expression transformée *)
+          let ne = analyse_tds_expression tds e in
+          (* Création de l'information associée à l'identfiant *)
+          let info = InfoVar (n,Undefined, 0, "") in
+          (* Création du pointeur sur l'information *)
+          let ia = info_to_info_ast info in
+          (* Ajout de l'information (pointeur) dans la tds *)
+          ajouter tds n ia;
+          (* Renvoie de la nouvelle déclaration où le nom a été remplacé par l'information
+          et l'expression remplacée par l'expression issue de l'analyse *)
+          AstTds.Declaration (t, ia, ne)
+      | Some _ ->
+          (* L'identifiant est trouvé dans la tds locale,
+          il a donc déjà été déclaré dans le bloc courant *)
+          raise (DoubleDeclaration n)
+    end
   | AstSyntax.Affectation (a,e) ->
       let na = analyse_tds_affectable tds a true in
       let ne = analyse_tds_expression tds e in
       AstTds.Affectation (na,ne)
   | AstSyntax.Constante (n,v) ->
-      begin
-        match chercherLocalement tds n with
-        | None ->
-          (* L'identifiant n'est pas trouvé dans la tds locale,
-             il n'a donc pas été déclaré dans le bloc courant *)
-          (* Ajout dans la tds de la constante *)
-          ajouter tds n (info_to_info_ast (InfoConst (n,v)));
-          (* Suppression du noeud de déclaration des constantes devenu inutile *)
-          AstTds.Empty
-        | Some _ ->
-          (* L'identifiant est trouvé dans la tds locale,
-          il a donc déjà été déclaré dans le bloc courant *)
-          raise (DoubleDeclaration n)
-      end
+    begin
+      match chercherLocalement tds n with
+      | None ->
+        (* L'identifiant n'est pas trouvé dans la tds locale,
+            il n'a donc pas été déclaré dans le bloc courant *)
+        (* Ajout dans la tds de la constante *)
+        ajouter tds n (info_to_info_ast (InfoConst (n,v)));
+        (* Suppression du noeud de déclaration des constantes devenu inutile *)
+        AstTds.Empty
+      | Some _ ->
+        (* L'identifiant est trouvé dans la tds locale,
+        il a donc déjà été déclaré dans le bloc courant *)
+        raise (DoubleDeclaration n)
+    end
   | AstSyntax.Affichage e ->
       (* Vérification de la bonne utilisation des identifiants dans l'expression *)
       (* et obtention de l'expression transformée *)
@@ -163,7 +166,7 @@ let rec analyse_tds_instruction tds oia loia i =
       (* Renvoie la nouvelle structure de la boucle *)
       AstTds.TantQue (nc, bast)
   | AstSyntax.Retour (e) ->
-      begin
+    begin
       (* On récupère l'information associée à la fonction à laquelle le return est associée *)
       match oia with
         (* Il n'y a pas d'information -> l'instruction est dans le bloc principal : erreur *)
@@ -173,7 +176,7 @@ let rec analyse_tds_instruction tds oia loia i =
         (* Analyse de l'expression *)
         let ne = analyse_tds_expression tds e in
         AstTds.Retour (ne,ia)
-      end
+    end
   | AstSyntax.BoucleInfinieNommee (n,li) ->
       (* Nom remplacé pour respecter la contrainte d'avoir *)
       (* des variables et boucles de même nom *)
@@ -230,10 +233,12 @@ let rec analyse_tds_instruction tds oia loia i =
 
 
 (* analyse_tds_bloc : tds -> info_ast option -> AstSyntax.bloc -> AstTds.bloc *)
-(* Paramètre tds : la table des symboles courante *)
-(* Paramètre oia : None si le bloc li est dans le programme principal,
-                   Some ia où ia est l'information associée à la fonction dans laquelle est le bloc li sinon *)
-(* Paramètre li : liste d'instructions à analyser *)
+(* Paramètre tds  : la table des symboles courante *)
+(* Paramètre oia  : None si le bloc li est dans le programme principal,
+                    Some ia où ia est l'information associée à la fonction dans laquelle est le bloc li sinon *)
+(* Paramètre loia : None si le bloc li n'est pas dans une boucle,
+                    Some ia où ia est l'information associée à la boucle dans laquelle est le bloc li sinon *)
+(* Paramètre li   : liste d'instructions à analyser *)
 (* Vérifie la bonne utilisation des identifiants et transforme le bloc en un bloc de type AstTds.bloc *)
 (* Erreur si mauvaise utilisation des identifiants *)
 and analyse_tds_bloc tds oia loia li =
@@ -242,18 +247,23 @@ and analyse_tds_bloc tds oia loia li =
   let tdsbloc = creerTDSFille tds in
   (* Analyse des instructions du bloc avec la tds du nouveau bloc.
      Cette tds est modifiée par effet de bord *)
-   let nli = List.map (analyse_tds_instruction tdsbloc oia loia) li in
-   (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
-   nli
+  let nli = List.map (analyse_tds_instruction tdsbloc oia loia) li in
+  (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
+  nli
 
 
-(* TODO *)
+(* ajouter_pointeur : tds -> string -> Type.typ -> Type.typ * info_ast *)
+(* Paramètre tds  : la table des symboles courante *)
+(* Paramètre n    : le nom de l'identifiant *)
+(* Paramètre t    : le type de la fonction *)
+(* Ajout de chaque paramètre de la fonction dans la TDS fille *)
+(* Erreur si mauvaise utilisation des identifiants *)
 let ajouter_pointeur tds n t =
   match chercherLocalement tds n with
   | None ->
       (* L'identifiant n'est pas trouvé dans la tds locale,
       il n'a donc pas été déclaré dans le bloc courant *)
-      (* Création de l'information associée à l'identfiant *)
+      (* Création de l'information associée à l'identifiant *)
       let info = InfoVar (n,t,0,"") in
       (* Création du pointeur sur l'information *)
       let ia = info_to_info_ast info in

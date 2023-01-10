@@ -44,21 +44,21 @@ let rec analyse_placement_instruction i reg depl =
       let nb = analyse_placement_bloc bloc reg depl in
       (AstPlacement.TantQue(exp, nb), 0) (* bloc donc taille 0 *)
   | AstType.Retour(exp, iast) ->
-      begin
-        match info_ast_to_info iast with
-        | InfoFun(_, typ, typList) ->
-          (* taille du type de retour *)
-          let tailleRet = getTaille typ in
-          (* taille de l'ensemble des parametres *)
-          let tailleParam =  List.fold_right (fun t res -> res + getTaille (t)) typList 0 in
-          (AstPlacement.Retour(exp, tailleRet, tailleParam), 0) (* bloc donc taille 0 *)
-        | _ -> failwith "Cas impossible"
-      end
+    begin
+      match info_ast_to_info iast with
+      | InfoFun(_, typ, typList) ->
+        (* taille du type de retour *)
+        let tailleRet = getTaille typ in
+        (* taille de l'ensemble des parametres *)
+        let tailleParam =  List.fold_right (fun t res -> res + getTaille (t)) typList 0 in
+        (AstPlacement.Retour(exp, tailleRet, tailleParam), 0) (* bloc donc taille 0 *)
+      | _ -> failwith "Cas impossible"
+    end
   | AstType.Empty -> (AstPlacement.Empty, 0)
   | AstType.BoucleInfinie (li) ->
-      (AstPlacement.BoucleInfinie(analyse_placement_bloc li reg depl), 0)
+      (AstPlacement.BoucleInfinie(analyse_placement_bloc li reg depl), 0) (* bloc donc taille 0 *)
   | AstType.BoucleInfinieNommee (ia, li) -> 
-      (AstPlacement.BoucleInfinieNommee(ia, analyse_placement_bloc li reg depl), 0)
+      (AstPlacement.BoucleInfinieNommee(ia, analyse_placement_bloc li reg depl), 0) (* bloc donc taille 0 *)
   | AstType.Break -> (AstPlacement.Break, 0)
   | AstType.BreakNommee (ia) -> (AstPlacement.BreakNommee (ia), 0)
   | AstType.Continue -> (AstPlacement.Continue, 0)

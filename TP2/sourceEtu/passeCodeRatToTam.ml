@@ -63,7 +63,7 @@ let rec analyse_code_expression exp =
         (* Inf valable *)
         | Inf-> nexp1 ^ nexp2 ^ Tam.subr "ILss"
         (* Fraction valable *)
-        | Fraction -> nexp1 ^ nexp2 ^ "\n"(*Tam.call "ST" "norm"*)
+        | Fraction -> nexp1 ^ nexp2 ^ "\n"
       end
   | AstType.AppelFonction(iast, expList) ->
       begin 
@@ -193,20 +193,22 @@ and analyse_code_instruction i detiq fetiq =
       begin
         match info_ast_to_info ia with
         | InfoBoucle n -> 
+            (* Je conformise la création de mes labels pour les boucles nommées *)
+            (* Efficace pour les breaks et continues nommées *)
             Tam.label ("debut@"^n)
             ^ (analyse_code_bloc li detiq fetiq)
             ^ Tam.jump ("debut@"^n)
             ^ Tam.label ("fin@"^n)
         | _ -> failwith "erreur interne"
       end
-  | AstPlacement.Break -> Tam.jump fetiq
+  | AstPlacement.Break -> Tam.jump fetiq (* Récupère le label de fin propagé *)
   | AstPlacement.BreakNommee (ia) ->
       begin
         match info_ast_to_info ia with
         | InfoBoucle n -> Tam.jump ("fin@"^n)
         | _ -> failwith "erreur interne"
       end 
-  | AstPlacement.Continue -> Tam.jump detiq
+  | AstPlacement.Continue -> Tam.jump detiq (* Récupère le label de début propagé *)
   | AstPlacement.ContinueNommee (ia) ->
       begin
         match info_ast_to_info ia with

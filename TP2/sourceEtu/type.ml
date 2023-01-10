@@ -8,7 +8,6 @@ let rec string_of_type t =
   | Undefined -> "Undefined"
   | Pointeur t -> "Pointeur(" ^ (string_of_type t) ^ ")"
 
-
 let est_compatible t1 t2 =
   match t1, t2 with
   | Bool, Bool -> true
@@ -60,13 +59,14 @@ let%test _ = not (est_compatible_list [Int] [Rat ; Int])
 let%test _ = not (est_compatible_list [Int ; Rat] [Rat ; Int])
 let%test _ = not (est_compatible_list [Bool ; Rat ; Bool] [Bool ; Rat ; Bool ; Int])
 
+(* Obtenir la taille d'un type donné *)
 let getTaille t =
   match t with
   | Int -> 1
   | Bool -> 1
   | Rat -> 2
   | Undefined -> 0
-  | Pointeur _ -> 1 (* getTaille t ??? *)
+  | Pointeur _ -> 1
   
 let%test _ = getTaille Int = 1
 let%test _ = getTaille Bool = 1
