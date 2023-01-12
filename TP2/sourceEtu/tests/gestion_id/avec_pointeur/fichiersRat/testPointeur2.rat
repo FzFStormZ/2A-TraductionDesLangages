@@ -1,0 +1,8 @@
+test {
+	(int *)* x = (new (int *));
+
+	(*(* x)) = 42;
+	int k = (*(* x));
+    
+	print k;
+}

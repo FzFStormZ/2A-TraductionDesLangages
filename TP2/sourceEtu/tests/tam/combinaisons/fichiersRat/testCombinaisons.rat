@@ -1,4 +1,4 @@
-int * valeur (bool p int * a int * b) {
+(int *) valeur (bool p (int *) a (int *) b) {
     return (p ? a : b);
 }
 
@@ -15,8 +15,8 @@ prog {
     int i = 0;
     bool pair = true;
     v1 : loop {
-        int * res = call valeur (pair &a &b);
-        print (*res);
+        (int *) res = call valeur (pair &a &b);
+        print (* res);
         pair = (pair = false);
         i = (i+1);
         if (i = 10) {
@@ -26,14 +26,14 @@ prog {
     
     print 888;
 
-    int * c = (new int);
+    (int *) c = (new int);
     (* c) = 0;
-    int * d = (new int);
+    (int *) d = (new int);
     (* d) = 1;
     int j = 0;
 
     loop {
-        print (*c);
+        print (* c);
         int inutile = call permute (c d);
         j = (j+1);
         if (j = 10) {

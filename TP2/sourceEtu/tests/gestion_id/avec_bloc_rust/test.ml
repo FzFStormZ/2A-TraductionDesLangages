@@ -73,6 +73,21 @@ let%test_unit "testExemple2" =
 
 let%test_unit "testExemple3" = 
   let _ = compiler (pathFichiersRat^"testExemple3.rat") in ()
+
+let%test_unit "testBreakHorsBoucle" = 
+  try 
+    let _ = compiler (pathFichiersRat^"testBreakHorsBoucle.rat")
+    in raise ErreurNonDetectee
+  with
+  | BreakHorsBoucle -> ()
+
+let%test_unit "testContinueHorsBoucle" =   
+  try 
+    let _ = compiler (pathFichiersRat^"testContinueHorsBoucle.rat")
+    in raise ErreurNonDetectee
+  with
+  | ContinueHorsBoucle -> ()
+
   
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix

@@ -1,6 +1,5 @@
 open Rat
 open Compilateur
-open Exceptions
 
 exception ErreurNonDetectee
 

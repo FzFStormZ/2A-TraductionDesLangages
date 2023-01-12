@@ -7,6 +7,9 @@ open Ast
 type t1 = Ast.AstSyntax.programme
 type t2 = Ast.AstTds.programme
 
+(* var globale *)
+
+
 
 (* analyse_tds_affectable : tds -> AstSyntax.affectable -> AstTds.affectable *)
 (* Paramètre tds      : la table des symboles courante *)
@@ -178,58 +181,92 @@ let rec analyse_tds_instruction tds oia loia i =
         AstTds.Retour (ne,ia)
     end
   | AstSyntax.BoucleInfinieNommee (n,li) ->
-      (* Nom remplacé pour respecter la contrainte d'avoir *)
-      (* des variables et boucles de même nom *)
-      let nr = "loop@"^n in      
-      begin
-        (* On vérifie si on est déjà dans une boucle nommée *)
-        match loia with
-        | None ->
-            let info = InfoBoucle nr in
-            let ia = info_to_info_ast info in
-            ajouter tds nr ia;
+    (* Nom remplacé pour respecter la contrainte d'avoir *)
+    (* des variables et boucles de même nom *)
+    let nr = "loop@"^n in      
+    begin
+      (* On vérifie si on est déjà dans une boucle nommée *)
+      match loia with
+      | None ->
+          (* Si non, on ajoute l'identifiant de la boucle dans la TDS de son bloc ! *)
+          (* Comme on peut avoir plusieurs boucles de même nom au même niveau, aucunes vérifications *)
+          let info = InfoBoucle nr in
+          let ia = info_to_info_ast info in
+          ajouter tds nr ia;
 
-            let nli = analyse_tds_bloc tds oia (Some ia) li in
+          let nli = analyse_tds_bloc tds oia (Some ia) li in
 
-            AstTds.BoucleInfinieNommee (ia,nli)
-        | Some ia ->
-            (* On vérifie si les 2 boucles imbriquées n'ont pas le même identifiant *)
-            begin
-              match info_ast_to_info ia with
-              | InfoBoucle(ni) ->
-                  if (nr = ni) then raise (DoubleDeclarationBoucle n)
-                  else
-                    let info = InfoBoucle nr in
-                    let ia = info_to_info_ast info in
-                    ajouter tds nr ia;
+          AstTds.BoucleInfinieNommee (ia,nli)
+      | Some ia ->
+        (* On n'accepte pas si les 2 boucles imbriquées ont le même identifiant *)
+        (* WARNING *)
+        begin
+          match info_ast_to_info ia with
+          | InfoBoucle(ni) ->
+            if (nr = ni) then 
+              (* WARNING *)
+              raise (DoubleDeclarationBoucle n)
+            else 
+              (* On ajoute la boucle dans la TDS courante *)
+              let info = InfoBoucle nr in
+              let ia = info_to_info_ast info in
+              ajouter tds nr ia;
 
-                    let nli = analyse_tds_bloc tds oia (Some ia) li in
+              let nli = analyse_tds_bloc tds oia (Some ia) li in
 
-                    AstTds.BoucleInfinieNommee (ia,nli)
-              | _ -> failwith "erreur interne"
-            end
-      end
+              AstTds.BoucleInfinieNommee (ia,nli)
+          | _ -> failwith "erreur interne"
+        end
+    end
   | AstSyntax.BoucleInfinie (li) ->
       (* On analyse juste les instructions dans la boucle *)
-      AstTds.BoucleInfinie (analyse_tds_bloc tds oia None li)
+      let info = InfoBoucle "loop@" in
+      let ia = info_to_info_ast info in
+      AstTds.BoucleInfinie (analyse_tds_bloc tds oia (Some ia) li)
   | AstSyntax.BreakNommee (n) -> 
-      (* On analyse si ce break nommé est associé à une boucle nommée *)
-      let nr = "loop@"^n in
-      begin  
-        match chercherGlobalement tds nr with
-        | None -> raise (BoucleNommeeNonDeclare n)
-        | Some ia -> AstTds.BreakNommee(ia)
-      end
-  | AstSyntax.Break -> AstTds.Break
+    (* On analyse si ce break nommé est associé à une boucle nommée *)
+    let nr = "loop@"^n in
+    begin
+      (* On vérifie d'abord si le break est bien dans une boucle *)
+      match loia with
+      | None -> raise BreakHorsBoucle
+      | Some _ ->
+        begin
+          (* Si c'est le cas, on cherche dans la TDS *)
+          match chercherGlobalement tds nr with
+          | None -> raise (BoucleNommeeNonDeclare n)
+          | Some ia -> AstTds.BreakNommee(ia)
+        end
+    end
+  | AstSyntax.Break -> 
+    (* Je veux juste vérifier si le break est bien dans une boucle *)
+    begin
+      match loia with
+      | None -> raise BreakHorsBoucle
+      | Some _ -> AstTds.Break
+    end
   | AstSyntax.ContinueNommee (n) ->
-      (* On analyse si ce continue nommé est associé à une boucle nommée *)
-      let nr = "loop@"^n in
-      begin  
-        match chercherGlobalement tds nr with
-        | None -> raise (BoucleNommeeNonDeclare n)
-        | Some ia -> AstTds.ContinueNommee(ia)
-      end
-  | AstSyntax.Continue -> AstTds.Continue
+    (* On analyse si ce continue nommé est associé à une boucle nommée *)
+    let nr = "loop@"^n in
+    begin
+      (* On vérifie d'abord si le continue est bien dans une boucle *)
+      match loia with
+      | None -> raise ContinueHorsBoucle
+      | Some _ ->
+        begin
+          (* Si c'est le cas, on cherche dans la TDS *)
+          match chercherGlobalement tds nr with
+          | None -> raise (BoucleNommeeNonDeclare n)
+          | Some ia -> AstTds.ContinueNommee(ia)
+        end
+    end
+  | AstSyntax.Continue ->
+    (* Je veux juste vérifier si le continue est bien dans une boucle *)
+    begin
+      match loia with
+      | None -> raise ContinueHorsBoucle
+      | Some _ -> AstTds.Continue
+    end
 
 
 (* analyse_tds_bloc : tds -> info_ast option -> AstSyntax.bloc -> AstTds.bloc *)
@@ -249,7 +286,7 @@ and analyse_tds_bloc tds oia loia li =
      Cette tds est modifiée par effet de bord *)
   let nli = List.map (analyse_tds_instruction tdsbloc oia loia) li in
   (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
-  nli
+  nli  
 
 
 (* ajouter_pointeur : tds -> string -> Type.typ -> Type.typ * info_ast *)

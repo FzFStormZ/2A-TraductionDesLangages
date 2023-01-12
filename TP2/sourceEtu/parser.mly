@@ -100,6 +100,7 @@ typ :
 | INT           {Int}
 | RAT           {Rat}
 | t=typ MULT    {Pointeur t} (* TYPE -> TYPE* *)
+| PO t=typ PF   {t}
 
 e : 
 | CALL n=ID PO lp=e* PF         {AppelFonction (n,lp)}

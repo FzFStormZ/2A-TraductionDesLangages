@@ -1,6 +1,5 @@
 open Rat
 open Compilateur
-open Exceptions
 
 exception ErreurNonDetectee
 
@@ -14,15 +13,12 @@ let pathFichiersRat = "../../../../../tests/gestion_id/avec_pointeur/fichiersRat
 (*  TESTS *)
 (**********)
 
-let%test_unit "testGrosDebug" = 
-  let _ = compiler (pathFichiersRat^"testGrosDebug.rat") in ()
+let%test_unit "testPointeur1" = 
+  let _ = compiler (pathFichiersRat^"testPointeur1.rat") in ()
 
-(* let%test_unit "testAffectation2"= 
-  try 
-    let _ = compiler (pathFichiersRat^"testAffectation2.rat") 
-    in raise ErreurNonDetectee
-  with
-  | IdentifiantNonDeclare("y") -> () *)
+let%test_unit "testPointeur2" = 
+  let _ = compiler (pathFichiersRat^"testPointeur2.rat") in ()
+
 
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix

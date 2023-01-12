@@ -8,16 +8,12 @@ let rec string_of_type t =
   | Undefined -> "Undefined"
   | Pointeur t -> "Pointeur(" ^ (string_of_type t) ^ ")"
 
-let est_compatible t1 t2 =
+let rec est_compatible t1 t2 =
   match t1, t2 with
   | Bool, Bool -> true
   | Int, Int -> true
   | Rat, Rat -> true
-  | Pointeur Int, Pointeur Int -> true
-  | Pointeur Rat, Pointeur Rat -> true
-  | Pointeur Bool, Pointeur Bool -> true
-  | Pointeur _, Pointeur Undefined -> true
-  | Pointeur Undefined, Pointeur _ -> true
+  | Pointeur t1, Pointeur t2 -> est_compatible t1 t2 || t1 = Undefined || t2 = Undefined
   | _ -> false 
 
 let%test _ = est_compatible Bool Bool
@@ -71,3 +67,7 @@ let getTaille t =
 let%test _ = getTaille Int = 1
 let%test _ = getTaille Bool = 1
 let%test _ = getTaille Rat = 2
+let%test _ = getTaille (Pointeur Int) = 1
+let%test _ = getTaille (Pointeur Rat) = 1
+let%test _ = getTaille (Pointeur Bool) = 1
+let%test _ = getTaille (Pointeur (Pointeur Int)) = 1
