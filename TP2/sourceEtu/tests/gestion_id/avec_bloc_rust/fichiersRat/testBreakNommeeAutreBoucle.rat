@@ -1,0 +1,12 @@
+main {
+
+    first : loop {
+        print 1;
+        break;
+    }
+
+    loop {
+        break first;
+    }
+
+}

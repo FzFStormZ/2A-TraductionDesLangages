@@ -27,11 +27,7 @@ let%test_unit "testBoucleNommee3" =
   let _ = compiler (pathFichiersRat^"testBoucleNommee3.rat") in ()
 
 let%test_unit "testBoucleNommee4"= 
-  try 
-    let _ = compiler (pathFichiersRat^"testBoucleNommee4.rat") 
-    in raise ErreurNonDetectee
-  with
-  | DoubleDeclarationBoucle("first") -> ()
+  let _ = compiler (pathFichiersRat^"testBoucleNommee4.rat") in ()
 
 let%test_unit "testBreak" = 
   let _ = compiler (pathFichiersRat^"testBreak.rat") in ()
@@ -44,7 +40,7 @@ let%test_unit "testBreakNommee2"=
     let _ = compiler (pathFichiersRat^"testBreakNommee2.rat") 
     in raise ErreurNonDetectee
   with
-  | BoucleNommeeNonDeclare("first") -> ()
+  | BreakNommeeAutreBoucle("first") -> ()
 
 let%test_unit "testBreakNommee3" = 
   let _ = compiler (pathFichiersRat^"testBreakNommee3.rat") in ()
@@ -60,19 +56,19 @@ let%test_unit "testContinueNommee2"=
     let _ = compiler (pathFichiersRat^"testContinueNommee2.rat") 
     in raise ErreurNonDetectee
   with
-  | BoucleNommeeNonDeclare("first") -> ()
+  | ContinueNommeeAutreBoucle("first") -> ()
 
 let%test_unit "testContinueNommee3" = 
   let _ = compiler (pathFichiersRat^"testContinueNommee3.rat") in ()
 
-let%test_unit "testExemple1" = 
-  let _ = compiler (pathFichiersRat^"testExemple1.rat") in ()
+let%test_unit "testBlocRustExemple1" = 
+  let _ = compiler (pathFichiersRat^"testBlocRustExemple1.rat") in ()
 
-let%test_unit "testExemple2" = 
-  let _ = compiler (pathFichiersRat^"testExemple2.rat") in ()
+let%test_unit "testBlocRustExemple2" = 
+  let _ = compiler (pathFichiersRat^"testBlocRustExemple2.rat") in ()
 
-let%test_unit "testExemple3" = 
-  let _ = compiler (pathFichiersRat^"testExemple3.rat") in ()
+let%test_unit "testBlocRustExemple3" = 
+  let _ = compiler (pathFichiersRat^"testBlocRustExemple3.rat") in ()
 
 let%test_unit "testBreakHorsBoucle" = 
   try 
@@ -88,6 +84,20 @@ let%test_unit "testContinueHorsBoucle" =
   with
   | ContinueHorsBoucle -> ()
 
+
+let%test_unit "testBreakNommeeAutreBoucle" =   
+  try 
+    let _ = compiler (pathFichiersRat^"testBreakNommeeAutreBoucle.rat")
+    in raise ErreurNonDetectee
+  with
+  | BreakNommeeAutreBoucle("first") -> ()
+
+let%test_unit "testContinueNommeeAutreBoucle" =   
+  try 
+    let _ = compiler (pathFichiersRat^"testContinueNommeeAutreBoucle.rat")
+    in raise ErreurNonDetectee
+  with
+  | ContinueNommeeAutreBoucle("first") -> ()
   
 (* Fichiers de tests de la génération de code -> doivent passer la TDS *)
 open Unix

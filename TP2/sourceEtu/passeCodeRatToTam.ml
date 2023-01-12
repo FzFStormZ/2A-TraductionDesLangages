@@ -1,6 +1,7 @@
 open Tds
 open Ast
 open Type
+open Code
 
 type t1 = Ast.AstPlacement.programme
 type t2 = string
@@ -180,39 +181,33 @@ and analyse_code_instruction i detiq fetiq =
       (analyse_code_expression exp)
       ^ Tam.return tailleRet tailleParam
   | AstPlacement.Empty -> ""
-  | AstPlacement.BoucleInfinie (li) ->
-      let lDebut = Code.getEtiquette() in
-      let lFin = Code.getEtiquette() in
-
-      Tam.label lDebut 
-      (* Je donne l'etiquette au bloc pour le break et continue *)
-      ^ (analyse_code_bloc li lDebut lFin)
-      ^ Tam.jump lDebut
-      ^ Tam.label lFin
   | AstPlacement.BoucleInfinieNommee (ia, li) ->
       begin
         match info_ast_to_info ia with
         | InfoBoucle n -> 
+            let label = getEtiquette() in
+            
+            let lDebut = "debut@"^label in
+            let lFin = "fin@"^label in
+            (* print_endline (lFin^n); *)
             (* Je conformise la création de mes labels pour les boucles nommées *)
             (* Efficace pour les breaks et continues nommées *)
-            Tam.label ("debut@"^n)
-            ^ (analyse_code_bloc li detiq fetiq)
-            ^ Tam.jump ("debut@"^n)
-            ^ Tam.label ("fin@"^n)
+            Tam.label (lDebut^n)
+            ^ (analyse_code_bloc li lDebut lFin)
+            ^ Tam.jump (lDebut^n)
+            ^ Tam.label (lFin^n)
         | _ -> failwith "erreur interne"
       end
-  | AstPlacement.Break -> Tam.jump fetiq (* Récupère le label de fin propagé *)
   | AstPlacement.BreakNommee (ia) ->
       begin
         match info_ast_to_info ia with
-        | InfoBoucle n -> Tam.jump ("fin@"^n)
+        | InfoBoucle n -> Tam.jump (fetiq^n)
         | _ -> failwith "erreur interne"
-      end 
-  | AstPlacement.Continue -> Tam.jump detiq (* Récupère le label de début propagé *)
+      end
   | AstPlacement.ContinueNommee (ia) ->
       begin
         match info_ast_to_info ia with
-        | InfoBoucle n -> Tam.jump ("debut@"^n)
+        | InfoBoucle n -> Tam.jump (detiq^n)
         | _ -> failwith "erreur interne"
       end 
 

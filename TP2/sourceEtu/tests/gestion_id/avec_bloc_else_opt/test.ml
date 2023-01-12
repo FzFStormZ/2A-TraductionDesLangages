@@ -13,8 +13,8 @@ let pathFichiersRat = "../../../../../tests/gestion_id/avec_bloc_else_opt/fichie
 (*  TESTS *)
 (**********)
 
-let%test_unit "testGrosDebugCorrect" = 
-  let _ = compiler (pathFichiersRat^"testGrosDebugCorrect.rat") in ()
+let%test_unit "testBlocElseOptExemple1" = 
+  let _ = compiler (pathFichiersRat^"testBlocElseOptExemple1.rat") in ()
 
 open Unix
 open Filename

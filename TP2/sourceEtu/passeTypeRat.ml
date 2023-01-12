@@ -171,11 +171,8 @@ let rec analyse_type_instruction i =
         | _ -> failwith "Cas impossible"
       end
   | AstTds.Empty -> AstType.Empty
-  | AstTds.BoucleInfinie (li) -> AstType.BoucleInfinie (analyse_type_bloc li)
   | AstTds.BoucleInfinieNommee (ia, li) -> AstType.BoucleInfinieNommee (ia, analyse_type_bloc li)
-  | AstTds.Break -> AstType.Break
   | AstTds.BreakNommee (ia) -> AstType.BreakNommee (ia)
-  | AstTds.Continue -> AstType.Continue 
   | AstTds.ContinueNommee (ia) -> AstType.ContinueNommee (ia)
 
 

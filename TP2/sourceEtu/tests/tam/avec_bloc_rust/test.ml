@@ -31,10 +31,10 @@ let pathFichiersRat = "../../../../../tests/tam/avec_bloc_rust/fichiersRat/"
 (*  TESTS *)
 (**********)
 
-(* Marche pas !*)
-(* let%expect_test "testExemple0" =
+
+let%expect_test "testExemple0" =
   runtam (pathFichiersRat^"testExemple0.rat");
-  [%expect{| 01 |}] *)
+  [%expect{| 01 |}]
 
 let%expect_test "testExemple1" =
   runtam (pathFichiersRat^"testExemple1.rat");
@@ -48,7 +48,6 @@ let%expect_test "testExemple3" =
   runtam (pathFichiersRat^"testExemple3.rat");
   [%expect{| 00010203040506101112131415162021222324252630313233343536 |}]
 
-(* Ce test ne passe pas ! *)
-(* let%expect_test "testExemple4" =
+let%expect_test "testExemple4" =
   runtam (pathFichiersRat^"testExemple4.rat");
-  [%expect{| 00010203040506101112131415162021222324252630313233343536 |}] *)
+  [%expect{| WARNING : 2 boucles imbriquées de même nom !00011011 |}]

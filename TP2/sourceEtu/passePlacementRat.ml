@@ -55,13 +55,9 @@ let rec analyse_placement_instruction i reg depl =
       | _ -> failwith "Cas impossible"
     end
   | AstType.Empty -> (AstPlacement.Empty, 0)
-  | AstType.BoucleInfinie (li) ->
-      (AstPlacement.BoucleInfinie(analyse_placement_bloc li reg depl), 0) (* bloc donc taille 0 *)
   | AstType.BoucleInfinieNommee (ia, li) -> 
       (AstPlacement.BoucleInfinieNommee(ia, analyse_placement_bloc li reg depl), 0) (* bloc donc taille 0 *)
-  | AstType.Break -> (AstPlacement.Break, 0)
   | AstType.BreakNommee (ia) -> (AstPlacement.BreakNommee (ia), 0)
-  | AstType.Continue -> (AstPlacement.Continue, 0)
   | AstType.ContinueNommee (ia) -> (AstPlacement.ContinueNommee(ia), 0)
 
 
