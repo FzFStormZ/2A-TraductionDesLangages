@@ -63,7 +63,7 @@ let rec analyse_code_expression exp =
         (* Inf valable *)
         | Inf-> nexp1 ^ nexp2 ^ Tam.subr "ILss"
         (* Fraction valable *)
-        | Fraction -> nexp1 ^ nexp2 ^ "\n"
+        | Fraction -> nexp1 ^ nexp2 ^ call "ST" "norm"
       end
   | AstType.AppelFonction(iast, expList) ->
       begin 

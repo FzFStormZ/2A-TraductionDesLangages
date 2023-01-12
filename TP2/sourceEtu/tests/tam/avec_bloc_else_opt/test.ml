@@ -35,7 +35,6 @@ let%expect_test "testGrosDebugCorrect" =
   runtam (pathFichiersRat^"testGrosDebugCorrect.rat");
   [%expect{| 6 |}]
 
-(* Probleme avec ce test !!! *)
-(* let%expect_test "testExemple" =
+let%expect_test "testExemple" =
   runtam (pathFichiersRat^"testExemple.rat");
-  [%expect{| 0246810 |}] *)
+  [%expect{| 0246810 |}]
