@@ -4,16 +4,29 @@ open Tds
 open Exceptions
 open Ast
 open Code
+open Stack
 
 type t1 = Ast.AstSyntax.programme
 type t2 = Ast.AstTds.programme
 
-(* Obtenir le nom d'un iast boucle *)
-let getIdBoucle iast =
-  match info_ast_to_info iast with
-  | InfoBoucle (n) -> n
-  | _ -> failwith "erreur : concerne seulement les info_ast bouclen!"
+(* Retourne un identifiant unique pour les boucles *)
+let getRandomIdBoucle =
+  let num = ref 0 in
+  fun () ->
+    num := (!num)+1 ;
+    "loop"^(string_of_int (!num))
 
+(* Cherche une InfoBoucle dans une pile ayant un certain nom *)
+let rec getIastBoucle n pile =
+if (is_empty pile)
+  then raise (IdentifiantNonDeclare n)
+  else 
+    let info = pop pile in
+    match info_ast_to_info info with
+    | InfoBoucle(_, ni) ->
+      if (n = ni) then info
+      else getIastBoucle n pile
+    | _ -> failwith "Internal Error"
 
 
 (* analyse_tds_affectable : tds -> AstSyntax.affectable -> AstTds.affectable *)
@@ -100,7 +113,7 @@ let rec analyse_tds_expression tds e =
 (* Vérifie la bonne utilisation des identifiants et transforme l'instruction
 en une instruction de type AstTds.instruction *)
 (* Erreur si mauvaise utilisation des identifiants *)
-let rec analyse_tds_instruction tds oia listBoucle i =
+let rec analyse_tds_instruction tds oia pile i =
   match i with
   | AstSyntax.Declaration (t, n, e) ->
     begin
@@ -154,23 +167,23 @@ let rec analyse_tds_instruction tds oia listBoucle i =
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc then *)
-      let tast = analyse_tds_bloc tds oia listBoucle t in
+      let tast = analyse_tds_bloc tds oia pile t in
       (* Analyse du bloc else *)
-      let east = analyse_tds_bloc tds oia listBoucle e in
+      let east = analyse_tds_bloc tds oia pile e in
       (* Renvoie la nouvelle structure de la conditionnelle *)
       AstTds.Conditionnelle (nc, tast, east)
   | AstSyntax.ElseOptionnel (c,t) ->
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc then *)
-      let tast = analyse_tds_bloc tds oia listBoucle t in
+      let tast = analyse_tds_bloc tds oia pile t in
       (* Renvoie la nouvelle structure de la conditionnelle *)
       AstTds.ElseOptionnel (nc, tast)
   | AstSyntax.TantQue (c,b) ->
       (* Analyse de la condition *)
       let nc = analyse_tds_expression tds c in
       (* Analyse du bloc *)
-      let bast = analyse_tds_bloc tds oia listBoucle b in
+      let bast = analyse_tds_bloc tds oia pile b in
       (* Renvoie la nouvelle structure de la boucle *)
       AstTds.TantQue (nc, bast)
   | AstSyntax.Retour (e) ->
@@ -186,95 +199,46 @@ let rec analyse_tds_instruction tds oia listBoucle i =
         AstTds.Retour (ne,ia)
     end
   | AstSyntax.BoucleInfinieNommee (n,li) ->
-    (* Nom remplacé pour respecter la contrainte d'avoir *)
-    (* des variables et boucles de même nom *)
-    let nr = "@"^n in   
-    let info = InfoBoucle nr in
-    let ia_boucle = info_to_info_ast info in
-
     begin
-      (* On vérifie si on est déjà dans une boucle *)
-      if (List.length listBoucle == 0) then
-          (* Si non, on propage son iast dans son bloc ! *)
-          (* Comme on peut avoir plusieurs boucles de même nom au même niveau, aucunes vérifications *)
-          let nli = analyse_tds_bloc tds oia [ia_boucle] li in
-
-          AstTds.BoucleInfinieNommee (ia_boucle,nli)
-      else
-        begin
-          match (List.find_opt (fun ia -> (getIdBoucle ia) = nr) listBoucle) with
-          | None -> 
-            let nli = analyse_tds_bloc tds oia (ia_boucle::listBoucle) li in
-  
-            AstTds.BoucleInfinieNommee (ia_boucle,nli)
-          | Some _ -> 
-            (* Si oui, on a donc 2 boucles imbriquées ayant le même identifiant *)
-            (* On l'ajoute dans la liste des iast des boucles dans son bloc à lui aussi *)
-            (* WARNING *)
-            print_string "WARNING : 2 boucles imbriquées de même nom !";
-
-            let nli = analyse_tds_bloc tds oia (ia_boucle::listBoucle) li in
-  
-            AstTds.BoucleInfinieNommee (ia_boucle,nli)
-
-
-        end
-        
+      
+      let id = getRandomIdBoucle () in
+      let info = InfoBoucle(id, n) in
+      let ia = info_to_info_ast info in
+      push ia pile;
+      let nb = analyse_tds_bloc tds oia pile li in
+      let _ = pop pile in
+      try
+        let _ = getIastBoucle n (copy pile) in
+        print_string "WARNING : 2 boucles imbriquées de même nom !";
+        AstTds.BoucleInfinieNommee(ia, nb)
+      with IdentifiantNonDeclare _ -> AstTds.BoucleInfinieNommee(ia, nb)
     end
   | AstSyntax.BoucleInfinie (li) ->
       (* On analyse juste les instructions dans la boucle *)
-      let info = InfoBoucle "@" in
+      let id = getRandomIdBoucle () in
+      let info = InfoBoucle(id, "") in
       let ia = info_to_info_ast info in
+      push ia pile;
+      let nb = analyse_tds_bloc tds oia pile li in
+      let _ = pop pile in
       (* On propage son iast dans son bloc ! *)
-      AstTds.BoucleInfinieNommee (ia, analyse_tds_bloc tds oia (ia::listBoucle) li)
+      AstTds.BoucleInfinieNommee (ia, nb)
   | AstSyntax.BreakNommee (n) -> 
-    (* On analyse si ce break nommé est associé à une boucle nommée *)
-    let nr = "@"^n in
-    begin
-      (* On vérifie d'abord si le break est bien dans une boucle *)
-      if (List.length listBoucle == 0) then
-        raise BreakHorsBoucle
-      else
-        (* print_endline (String.concat " " (List.map (getIdBoucle) listBoucle)); *)
-        match (List.find_opt (fun ia -> getIdBoucle ia = nr) listBoucle) with
-        | None -> raise (BreakNommeeAutreBoucle n)
-        | Some ia -> AstTds.BreakNommee(ia)
-    end
+    let ia = getIastBoucle n (copy pile) in
+    AstTds.BreakNommee ia
   | AstSyntax.Break -> 
-    (* Je vérifie juste si le break est bien dans une boucle *)
-    if (List.length listBoucle == 0) then
-      raise BreakHorsBoucle
-    else
-      (* Si c'est le cas, on prend le dernier iast boucle ajouté dans la liste *)
-      begin
-        match listBoucle with
-        | h::_ -> 
-          AstTds.BreakNommee(h)
-        | _ -> failwith "erreur interne"
-      end
+    if (is_empty pile) then raise (BreakHorsBoucle)
+    else 
+      let ia = top pile in
+      AstTds.BreakNommee ia
   | AstSyntax.ContinueNommee (n) ->
-    (* On analyse si ce continue nommé est associé à une boucle nommée *)
-    let nr = "@"^n in
-    begin
-      (* On vérifie d'abord si le break est bien dans une boucle *)
-      if (List.length listBoucle == 0) then
-        raise ContinueHorsBoucle
-      else
-        match (List.find_opt (fun ia -> getIdBoucle ia = nr) listBoucle) with
-        | None -> raise (ContinueNommeeAutreBoucle n)
-        | Some ia -> AstTds.BreakNommee(ia)
-    end
+    let ia = getIastBoucle n (copy pile) in
+    AstTds.ContinueNommee ia
   | AstSyntax.Continue ->
-    (* Je vérifie juste si le continue est bien dans une boucle *)
-    if (List.length listBoucle == 0) then
-      raise ContinueHorsBoucle
-    else
-      (* Si c'est le cas, on prend le dernier iast boucle ajouté dans la liste *)
-      begin
-        match listBoucle with
-        | h::_ -> AstTds.ContinueNommee(h)
-        | _ -> failwith "erreur interne"
-      end
+    if (is_empty pile) then raise (ContinueHorsBoucle)
+    else 
+      let ia = top pile in
+      AstTds.ContinueNommee ia
 
 
 (* analyse_tds_bloc : tds -> info_ast option -> AstSyntax.bloc -> AstTds.bloc *)
@@ -286,13 +250,13 @@ let rec analyse_tds_instruction tds oia listBoucle i =
 (* Paramètre li   : liste d'instructions à analyser *)
 (* Vérifie la bonne utilisation des identifiants et transforme le bloc en un bloc de type AstTds.bloc *)
 (* Erreur si mauvaise utilisation des identifiants *)
-and analyse_tds_bloc tds oia loia li =
+and analyse_tds_bloc tds oia pile li =
   (* Entrée dans un nouveau bloc, donc création d'une nouvelle tds locale
   pointant sur la table du bloc parent *)
   let tdsbloc = creerTDSFille tds in
   (* Analyse des instructions du bloc avec la tds du nouveau bloc.
      Cette tds est modifiée par effet de bord *)
-  let nli = List.map (analyse_tds_instruction tdsbloc oia loia) li in
+  let nli = List.map (analyse_tds_instruction tdsbloc oia pile) li in
   (* afficher_locale tdsbloc ; *) (* décommenter pour afficher la table locale *)
   nli  
 
@@ -350,7 +314,8 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,n,lp,li)) =
   let nlp = List.map (fun (t,n) -> ajouter_pointeur tds_fun n t) lp in
 
   (* Analyser les identifiants dans le bloc *)
-  let lie = analyse_tds_bloc tds_fun (Some ia) [] li in
+  let pile = create () in
+  let lie = analyse_tds_bloc tds_fun (Some ia) pile li in
   
   (* On renvoie la fonction de type AstTds.Fonction *)
   AstTds.Fonction(t, ia, nlp, lie)
@@ -364,5 +329,6 @@ en un programme de type AstTds.programme *)
 let analyser (AstSyntax.Programme (fonctions,prog)) =
   let tds = creerTDSMere () in
   let nf = List.map (analyse_tds_fonction tds) fonctions in
-  let nb = analyse_tds_bloc tds None [] prog in
+  let pile = create () in
+  let nb = analyse_tds_bloc tds None pile prog in
   AstTds.Programme (nf,nb)

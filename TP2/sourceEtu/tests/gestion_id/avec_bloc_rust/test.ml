@@ -40,7 +40,7 @@ let%test_unit "testBreakNommee2"=
     let _ = compiler (pathFichiersRat^"testBreakNommee2.rat") 
     in raise ErreurNonDetectee
   with
-  | BreakNommeeAutreBoucle("first") -> ()
+  | IdentifiantNonDeclare("first") -> ()
 
 let%test_unit "testBreakNommee3" = 
   let _ = compiler (pathFichiersRat^"testBreakNommee3.rat") in ()
@@ -56,7 +56,7 @@ let%test_unit "testContinueNommee2"=
     let _ = compiler (pathFichiersRat^"testContinueNommee2.rat") 
     in raise ErreurNonDetectee
   with
-  | ContinueNommeeAutreBoucle("first") -> ()
+  | IdentifiantNonDeclare("first") -> ()
 
 let%test_unit "testContinueNommee3" = 
   let _ = compiler (pathFichiersRat^"testContinueNommee3.rat") in ()

@@ -10,7 +10,7 @@ type info =
   (* Information associée à une fonction : son nom (utile pour l'appel), son type de retour et la liste des types des paramètres *)
   | InfoFun of string * typ * typ list
   (* Information associée à une loop : son nom (utile pour la masquage) *)
-  | InfoBoucle of string
+  | InfoBoucle of string * string
 
 (* Table des symboles *)
 type tds 
